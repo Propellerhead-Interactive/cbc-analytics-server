@@ -38,7 +38,8 @@ class EventHandler(BaseHandler):
         self.set_default_headers()
         #print self.request.uri
         url = self.request.uri
-        query = urlparse(urllib.unquote(url) ).query
+        
+        query = urlparse(urllib.unquote(url),allow_fragments=False ).query
         data = json.loads(query)
         print data
         self.write_to_neo(data)

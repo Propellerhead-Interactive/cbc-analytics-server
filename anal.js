@@ -169,9 +169,8 @@ Todo
         visit_token: visitId,
         visitor_token: visitorId,
         platform: ahoy.platform || "Web",
-        landing_page: window.location.href,
-        screen_width: window.screen.width,
-        screen_height: window.screen.height
+        url: window.location.href,
+        
       };
 
       // referrer
@@ -181,7 +180,7 @@ Todo
 
       log(data);
 
-      $.get(visitsUrl, data, setReady, "json");
+      //$.get(visitsUrl, JSON.stringify(data), setReady, "json");
     } else {
       log("Cookies disabled");
       setReady();
@@ -215,6 +214,8 @@ Todo
 
   ahoy.track = function (name, properties) {
     // generate unique id
+    properties.url=encodeURIComponent(window.document.location.href);
+    properties.title=window.document.title;
     var event = {
       id: generateId(),
       name: name,
@@ -233,8 +234,10 @@ Todo
   };
 
   ahoy.trackView = function () {
+    
+   
     var properties = {
-      url: window.location.href,
+      url: encodeURIComponent(window.document.location.href),
       title: document.title,
       page: page,
       category:category
