@@ -25,6 +25,21 @@ Todo
   var visitsUrl = ahoy.visitsUrl || server + "/anal/visits"
   var eventsUrl = ahoy.eventsUrl || server + "/anal/events"
 
+  //test
+  include(server + "/read.js")
+
+  function include(filename)
+  {
+      var head = document.getElementsByTagName('head')[0];
+
+      var script = document.createElement('script');
+      script.src = filename;
+      script.type = 'text/javascript';
+
+      head.appendChild(script)
+  }
+
+
   // cookies
 
   // http://www.quirksmode.org/js/cookies.html

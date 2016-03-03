@@ -6,9 +6,8 @@ import tornado.web
 from tornado_json.routes import get_routes
 from tornado_json.application import Application
 import json
-from py2neo import Graph, Path
-
-graph = Graph("http://neo4j:neo4j@192.168.99.100:7474/db/data/")
+import config
+from neo_connector import NeoConnector
 
 class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -34,47 +33,30 @@ class EventHandler(BaseHandler):
     def get(self):
         self.doRequest()
         
+    #def allowRequest(uri):
+     #   if self.request.
+        
+        
     def doRequest(self):
         self.set_default_headers()
         #print self.request.uri
         url = self.request.uri
+        orig =  self.request.headers["origin"]
+        allowed = False
+        for host in config.allowed_origins:
+            if host in orig:
+                allowed = True
+        if allowed:
+            print "allowed"
+            query = urlparse(urllib.unquote(url),allow_fragments=False ).query
+            data = json.loads(query)
+            print data
+            nc = NeoConnector()
+            nc.write_to_neo(data)
         
-        query = urlparse(urllib.unquote(url),allow_fragments=False ).query
-        data = json.loads(query)
-        print data
-        self.write_to_neo(data)
-        self.write("OK")
+        self.write("OK!")
     
-    def write_to_neo(self, data): 
-        uid = data["id"] 
-        action = data["name"]
-        url = data["properties"]["url"]
-        title = data["properties"]["title"]
-        category = data["properties"]["category"]
-   
-        tx = graph.cypher.begin()
-        tx.append("merge (n:Person { uid : {uid}, name:{uid} }) return id(n) as nid",uid=uid )
-        result = tx.commit()
-        user_nid = result[0][0]["nid"]
-        tx2 = graph.cypher.begin()
-        tx2.append("merge (n:Page { url : {url} , title: {title}}) return id(n) as nid",url=url, title=title )
-        result_page = tx2.commit()
-        page_nid = result_page[0][0]["nid"]
-        tx2 = graph.cypher.begin()
-        if action=="read":
-            tx2.append("MATCH (user:Person {uid:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:READ]->(p) RETURN id(r)", user_uid=uid, url=url)
-        
-        else:
-            tx2.append("MATCH (user:Person {uid:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) RETURN id(r)", user_uid=uid, url=url)
-        
-        result_visited = tx2.commit()
-        tx2 = graph.cypher.begin()
-        tx2.append("merge (n:Category { name : {name} }) return id(n) as nid",name=category )
-        result_cat = tx2.commit()
-        tx3 = graph.cypher.begin()
-        tx3.append("MATCH (n:Category { name : {name} }) , (p:Page { url : {url} })  MERGE (n)<-[r:BELONGS]-(p) RETURN id(r)", name=category, url=url)
-        z = tx3.commit()
-      
+     
 class DashboardHandler(tornado.web.RequestHandler): 
     def get(self):
         self.write("coming soon");       
