@@ -1,7 +1,10 @@
 from py2neo import Graph, Path
 import config
+
+
 pw = config.neo4j_pw
 host = config.neo4j_server
+
 graph = Graph("http://neo4j:%s@%s:7474/db/data/"%(pw, host))
 
 class NeoConnector():
