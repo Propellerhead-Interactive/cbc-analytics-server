@@ -49,7 +49,6 @@ class EventHandler(BaseHandler):
         #print self.request.uri
         url = self.request.uri
         orig =  self.request.headers["origin"]
-        
         if check_allowed(orig):
             print "allowed"
             query = urlparse(urllib.unquote(url),allow_fragments=False ).query
@@ -64,23 +63,6 @@ class EventHandler(BaseHandler):
 class DashboardHandler(tornado.web.RequestHandler): 
     def get(self):
         self.write("coming soon");       
-
-        
-class NothingHandler(tornado.web.RequestHandler):        
-    def get(self):
-        jsonData = request.get_json()
-        if "url" in jsonData[0]:
-            userid = jsonData[0]["id"]
-            name = jsonData[0]["name"]
-            time = jsonData[0]["time"]
-            props = jsonData[0]["properties"]
-            url= props["url"]
-            title= props["title"]
-            return name +""+ str(time) +""+ userid
-        else:
-            return jsonData
-        
-        
 
 def make_app():
     tornado.autoreload.start()
@@ -97,5 +79,5 @@ def make_app():
 
 if __name__ == "__main__":
     app = make_app()
-    app.listen(8888)
+    app.listen(config.service_port)
     tornado.ioloop.IOLoop.instance().start()
