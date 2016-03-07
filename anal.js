@@ -11,7 +11,7 @@ Todo
 (function (window) {
   "use strict";
   //var server = "http://crazykat.propellerheadlabs.io:8888"
-  var server = "http://localhost:8888"
+  var server = "http://crazykat.propellerheadlabs.io:8888"
   
   var ahoy = window.ahoy || window.Ahoy || {};
   var $ = window.jQuery || window.Zepto || window.$;
