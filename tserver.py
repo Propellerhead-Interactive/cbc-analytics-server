@@ -48,8 +48,8 @@ class EventHandler(BaseHandler):
         self.set_default_headers()
         #print self.request.uri
         url = self.request.uri
-        orig =  self.request.headers["origin"]
-        if check_allowed(orig):
+        #orig =  self.request.headers["origin"]
+        if True:#check_allowed(orig):
             print "allowed"
             query = urlparse(urllib.unquote(url),allow_fragments=False ).query
             data = json.loads(query)
