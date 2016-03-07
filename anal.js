@@ -26,7 +26,7 @@ Todo
   var eventsUrl = ahoy.eventsUrl || server + "/anal/events"
 
   //test
-  include(server + "/read.js")
+  //include(server + "/read.js")
 
   function include(filename)
   {
