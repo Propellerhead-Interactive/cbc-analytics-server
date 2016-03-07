@@ -13,13 +13,15 @@ class NeoConnector():
         
     def write_to_neo(self, data): 
         uid = data["id"] 
+        visitor = data["visitor"] 
+        
         action = data["name"]
         url = data["properties"]["url"]
         title = data["properties"]["title"]
         category = data["properties"]["category"]
    
         tx = graph.cypher.begin()
-        tx.append("merge (n:Person { uid : {uid}, name:{uid} }) return id(n) as nid",uid=uid )
+        tx.append("merge (n:Person { name:{visitor} }) return id(n) as nid",visitor=visitor )
         result = tx.commit()
         user_nid = result[0][0]["nid"]
         tx2 = graph.cypher.begin()
@@ -28,10 +30,10 @@ class NeoConnector():
         page_nid = result_page[0][0]["nid"]
         tx2 = graph.cypher.begin()
         if action=="read":
-            tx2.append("MATCH (user:Person {uid:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:READ]->(p) RETURN id(r)", user_uid=uid, url=url)
+            tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:READ]->(p) RETURN id(r)", user_uid=visitor, url=url)
         
         else:
-            tx2.append("MATCH (user:Person {uid:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) RETURN id(r)", user_uid=uid, url=url)
+            tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) RETURN id(r)", user_uid=visitor, url=url)
         
         result_visited = tx2.commit()
         tx2 = graph.cypher.begin()

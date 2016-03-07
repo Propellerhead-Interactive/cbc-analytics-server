@@ -235,7 +235,7 @@ Todo
     properties.url=encodeURIComponent(window.document.location.href);
     properties.title=window.document.title;
     var event = {
-      visitor: getVisitorId()
+      visitor: visitorId,
       id: generateId(),
       name: name,
       properties: properties,
