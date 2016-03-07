@@ -15,16 +15,18 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
         self.set_header('Access-Control-Max-Age', 3600)
         self.set_header('Access-Control-Allow-Headers', 'Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With')
-        self.set_header('Content-type', 'application/json')
+       
 
 class MainHandler(BaseHandler):
     def get(self):
         self.set_default_headers()
+        self.set_header('Content-type', 'application/json')
         self.render("anal.js")
 
 class ReadJSHandler(BaseHandler):
     def get(self):
         self.set_default_headers()
+        self.set_header('Content-type', 'application/json')
         self.render("read.js")
         
 class EventHandler(BaseHandler):
