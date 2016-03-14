@@ -1,5 +1,5 @@
 window.lana = {
-  server: ''
+  server: 'http://localhost:8888'
 };
 
 /*
@@ -19,7 +19,7 @@ window.lana = {
 (function (window) {
   "use strict";
 
-  var ahoy = window.ahoy || window.Ahoy || {};
+  var lana = window.lana || window.Lana || {};
   var server = lana.server || '';
   var visitId, visitorId, track;
   var visitTtl = 4 * 60; // 4 hours
@@ -28,17 +28,17 @@ window.lana = {
   var queue = [];
   var canStringify = typeof(JSON) !== "undefined" && typeof(JSON.stringify) !== "undefined";
   var eventQueue = [];
-  var page = ahoy.page || window.location;
-  var category = ahoy.category || "none"
-  var visitsUrl = ahoy.visitsUrl || server + "/ahoy/visits"
-  var eventsUrl = ahoy.eventsUrl || server + "/ahoy/events"
+  var page = lana.page || window.location;
+  var category = lana.category || "none"
+  var visitsUrl = lana.visitsUrl || server + "/lana/visits"
+  var eventsUrl = lana.eventsUrl || server + "/lana/events"
 
   var cookies = {
-    visit: 'ahoy_visit',
-    visitor: 'ahoy_visitor',
-    events: 'ahoy_events',
-    track: 'ahoy_track',
-    debug: 'ahoy_debug'
+    visit: 'lana_visit',
+    visitor: 'lana_visitor',
+    events: 'lana_events',
+    track: 'lana_track',
+    debug: 'lana_debug'
   };
 
   // cookies
@@ -52,8 +52,8 @@ window.lana = {
       date.setTime(date.getTime() + (ttl * 60 * 1000));
       expires = "; expires=" + date.toGMTString();
     }
-    if (ahoy.domain) {
-      cookieDomain = "; domain=" + ahoy.domain;
+    if (lana.domain) {
+      cookieDomain = "; domain=" + lana.domain;
     }
     document.cookie = name + "=" + escape(value) + expires + cookieDomain + "; path=/";
   }
@@ -81,18 +81,32 @@ window.lana = {
   //http requests
 
   function doHttpRequest(method, url, data, contenttype, callback){
+
+    var proper_url = method == 'GET' ? url + '?' + data : url;
+
     var r = new XMLHttpRequest();
-    r.open(method, url, true);
+    r.open(method, proper_url, true);
 
     if (contenttype) {
       r.setRequestHeader('Content-Type', contenttype);
     }
-    r.onreadystatechange = function(){
-      if (r.readyState != 4 || r.status != 200){
+
+    r.onload = function(e) {
+      if (r.status >= 200 && r.status < 400){
         callback();
       }
+    };
+
+    r.onerror = function(e){
+      console.log("Error:");
+      console.log(e);
+    };
+
+    if (method == 'POST') {
+      r.send(data);
+    } else {
+      r.send();
     }
-    r.send(data);
   }
 
   function log(message) {
@@ -138,7 +152,7 @@ window.lana = {
       if (canStringify) {
 
         //todo - add contenttype and datatype-json to function
-        doHttpRequest('POST', eventsUrl, JSON.stringify([event]), 'application/json; charset=utf-8', function(){
+        doHttpRequest('GET', eventsUrl, JSON.stringify(event), 'application/json', function(){
           for (var i = 0; i < eventQueue.length; i++) {
             if (eventQueue[i].id == event.id) {
               eventQueue.splice(i, 1);
@@ -207,7 +221,7 @@ window.lana = {
       for (var i = 0; i < els[el].length; i++) {
         els[el][i].addEventListener(evt, function(event){
           var properties = event.properties;
-          ahoy.track("$" + evt, properties);
+          lana.track("$" + evt, properties);
         }, false);
       }
     }
@@ -245,7 +259,7 @@ window.lana = {
       var data = {
         visit_token: visitId,
         visitor_token: visitorId,
-        platform: ahoy.platform || "Web",
+        platform: lana.platform || "Web",
         landing_page: page.href,
         screen_width: window.screen.width,
         screen_height: window.screen.height
@@ -259,22 +273,22 @@ window.lana = {
       log(data);
 
       //todo - set responsetype as json
-      doHttpRequest('POST', visitsUrl, data, false, setReady);
+      //doHttpRequest('GET', visitsUrl, JSON.stringify(data), false, setReady);
     } else {
       log("Cookies disabled");
       setReady();
     }
   }
 
-  ahoy.getVisitId = ahoy.getVisitToken = function () {
+  lana.getVisitId = lana.getVisitToken = function () {
     return visitId;
   };
 
-  ahoy.getVisitorId = ahoy.getVisitorToken = function () {
+  lana.getVisitorId = lana.getVisitorToken = function () {
     return visitorId;
   };
 
-  ahoy.reset = function () {
+  lana.reset = function () {
     destroyCookie(cookies.visit);
     destroyCookie(cookies.visitor);
     destroyCookie(cookies.events);
@@ -282,7 +296,7 @@ window.lana = {
     return true;
   };
 
-  ahoy.debug = function (enabled) {
+  lana.debug = function (enabled) {
     if (enabled === false) {
       destroyCookie(cookies.debug);
     } else {
@@ -291,13 +305,14 @@ window.lana = {
     return true;
   };
 
-  ahoy.track = function (name, properties) {
+  lana.track = function (name, properties) {
     // generate unique id
 
     properties.url = encodeURIComponent(page.href);
     properties.title = document.title;
 
     var event = {
+      visitor: visitorId,
       id: generateId(),
       name: name,
       properties: properties,
@@ -314,17 +329,17 @@ window.lana = {
     }, 1000);
   };
 
-  ahoy.trackView = function () {
+  lana.trackView = function () {
     var properties = {
       url: encodeURIComponent(page.href),
       title: document.title,
       page: page.pathname,
       category: category
     };
-    ahoy.track("$view", properties);
+    lana.track("$view", properties);
   };
 
-  ahoy.trackClicks = function () {
+  lana.trackClicks = function () {
     var els = {
       anchors: document.getElementsByTagName("a"),
       buttons: document.getElementsByTagName("button"),
@@ -348,13 +363,13 @@ window.lana = {
           var properties = eventProperties(target);
           properties.text = properties.tag == "input" ? target.value : target.innerHTML.replace(/[\s\r\n]+/g, " ").trim();
           properties.href = target.href;
-          ahoy.track("$click", properties);
+          lana.track("$click", properties);
         }, false);
       }
     }
   };
 
-  ahoy.trackSubmits = function () { 
+  lana.trackSubmits = function () { 
     var onsubmit_els = {
       forms: document.getElementsByTagName("form")
     };
@@ -362,7 +377,7 @@ window.lana = {
     addEvtHandlers(onsubmit_els, 'submit');
   };
 
-  ahoy.trackChanges = function () {
+  lana.trackChanges = function () {
     var onchange_els = {
       forms: document.getElementsByTagName("input"),
       textareas: document.getElementsByTagName("textarea"),
@@ -372,11 +387,11 @@ window.lana = {
     addEvtHandlers(onchange_els, 'change');
   };
 
-  ahoy.trackAll = function() {
-    ahoy.trackView();
-    ahoy.trackClicks();
-    ahoy.trackSubmits();
-    ahoy.trackChanges();
+  lana.trackAll = function() {
+    lana.trackView();
+    lana.trackClicks();
+    lana.trackSubmits();
+    lana.trackChanges();
   };
 
   // push events from queue
@@ -390,5 +405,5 @@ window.lana = {
     trackEvent(eventQueue[i]);
   }
 
-  window.ahoy = ahoy;
+  window.lana = lana;
 }(window));

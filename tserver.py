@@ -21,7 +21,7 @@ class MainHandler(BaseHandler):
     def get(self):
         self.set_default_headers()
         self.set_header('Content-type', 'application/json')
-        self.render("anal.js")
+        self.render("lana.js")
 
 class ReadJSHandler(BaseHandler):
     def get(self):
@@ -71,10 +71,10 @@ def make_app():
     for dir, _, files in os.walk('.'):
         [tornado.autoreload.watch(dir + '/' + f) for f in files]
     return tornado.web.Application([
-        (r"/anal.js", MainHandler),
+        (r"/lana.js", MainHandler),
         (r"/read.js", ReadJSHandler),
-        (r"/anal/events", EventHandler),
-        (r"/anal/visits", EventHandler),
+        (r"/lana/events", EventHandler),
+        (r"/lana/visits", EventHandler),
         (r"/dashboard/", DashboardHandler),
         
     ])
