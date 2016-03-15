@@ -19,6 +19,7 @@ class NeoConnector():
         url = data["properties"]["url"]
         title = data["properties"]["title"]
         category = data["properties"]["category"]
+        
    
         tx = graph.cypher.begin()
         tx.append("merge (n:Person { name:{visitor} }) return id(n) as nid",visitor=visitor )
@@ -30,16 +31,18 @@ class NeoConnector():
         page_nid = result_page[0][0]["nid"]
         tx2 = graph.cypher.begin()
         if action=="read":
-            tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:READ]->(p) RETURN id(r)", user_uid=visitor, url=url)
-        
+            tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) SET r.read = true RETURN id(r)", user_uid=visitor, url=url)
+            
         else:
             tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) RETURN id(r)", user_uid=visitor, url=url)
         
         result_visited = tx2.commit()
         tx2 = graph.cypher.begin()
-        tx2.append("merge (n:Category { name : {name} }) return id(n) as nid",name=category )
+        for c2 in category:
+            tx2.append("merge (n:Category { name : {name} }) return id(n) as nid",name=c2 )
         result_cat = tx2.commit()
         tx3 = graph.cypher.begin()
-        tx3.append("MATCH (n:Category { name : {name} }) , (p:Page { url : {url} })  MERGE (n)<-[r:BELONGS]-(p) RETURN id(r)", name=category, url=url)
+        for c in category:
+            tx3.append("MATCH (n:Category { name : {name} }) , (p:Page { url : {url} })  MERGE (n)<-[r:BELONGS]-(p) RETURN id(r)", name=c, url=url)
         z = tx3.commit()
  
