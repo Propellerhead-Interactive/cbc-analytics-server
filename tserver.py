@@ -9,6 +9,8 @@ from tornado_json.application import Application
 import json
 import config
 
+debug=True
+
 class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
         self.set_header('Access-Control-Allow-Origin', '*')
@@ -48,18 +50,19 @@ class EventHandler(BaseHandler):
     """The meat"""   
     def doRequest(self):
         self.set_default_headers()
-        #print self.request.uri
         url = self.request.uri
-        #orig =  self.request.headers["origin"]
         if True:#check_allowed(orig):
-            print "allowed"
-            query = urlparse(urllib.unquote(url),allow_fragments=False ).query
-            data = json.loads(query)
-            print data
-            nc = NeoConnector()
-            nc.write_to_neo(data)
-        
-        self.write("OK!")
+            try:
+                query = urlparse(urllib.unquote(url),allow_fragments=False ).query
+                data = json.loads(query)
+                nc = NeoConnector()
+                nc.write_to_neo(data)
+            except IOError as e:
+                if debug:
+                    print e
+                self.write("nOK!")
+            else:
+                self.write("OK!")
     
      
 class DashboardHandler(tornado.web.RequestHandler): 
