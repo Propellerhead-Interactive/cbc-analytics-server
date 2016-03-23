@@ -7,7 +7,7 @@ Now with extra NEO!
 Edit the config.py file 
 * neo4j server, 
 * neo4j password (assumed username is neo4j) 
-* server port (8888 for development)
+* server port 
 
 ## IMPLEMENTATION
 
