@@ -67,7 +67,7 @@ class EventHandler(BaseHandler):
      
 class DashboardHandler(tornado.web.RequestHandler): 
     def get(self):
-        self.write("coming soon");       
+        self.write("Hi!");       
 
 def make_app():
     tornado.autoreload.start()
@@ -78,7 +78,7 @@ def make_app():
         (r"/read.js", ReadJSHandler),
         (r"/lana/events", EventHandler),
         (r"/lana/visits", EventHandler),
-        (r"/dashboard/", DashboardHandler),
+        (r"/", DashboardHandler),
         
     ])
 
