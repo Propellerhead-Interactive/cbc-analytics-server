@@ -30,17 +30,17 @@ Add the following code to your web pages (based on the CBC tagged properties)
 			/* setup analytics for this page */
 			
 			var trackingData = {"category":category};
-			lana.debug(true);
-      lana.track("load", trackingData);
+			//lana.debug(true);
+    			lana.track("load", trackingData);
 		  /* configure readJS for this page */
 			var readingJSConfig = {};
 			readingJSConfig.el=".article-text";
 			readingJSConfig.cb = function(){
-		    lana.track("read", trackingData);
+		    		lana.track("read", trackingData);
 			}; 
 		window.readingJSConfig = readingJSConfig;
-	  </script>
-    <script src="http://localhost:8888/read.js"></script>
+    </script>
+    <script src="http://{your_analytics_server}:{analytics_port}/read.js"></script>
 
 ```
 
