@@ -34,9 +34,13 @@ class ReadJSHandler(BaseHandler):
 class EventHandler(BaseHandler):
     """The ol options routine for those times when Cross domain is not your friend"""
     def options(self):
+        @asynchronous
+        @gen.engine
         self.doRequest()
     """The ol get routine"""
     def get(self):
+        @asynchronous
+        @gen.engine
         self.doRequest()
    
     """make sure your origin header is allwoed to be sending data"""
@@ -49,6 +53,7 @@ class EventHandler(BaseHandler):
     
     """The meat"""   
     def doRequest(self):
+        
         self.set_default_headers()
         url = self.request.uri
         if True:#check_allowed(orig):
