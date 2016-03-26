@@ -1,5 +1,5 @@
 window.lana = {
-  server: "http://crazykat.propellerheadlabs.io:8888"
+  server: "http://localhost:8888"
 };
 
 /*
