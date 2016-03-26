@@ -32,15 +32,11 @@ class ReadJSHandler(BaseHandler):
         self.render("read.js")
         
 class EventHandler(BaseHandler):
-    """The ol options routine for those times when Cross domain is not your friend"""
+    
+    
     def options(self):
-        @asynchronous
-        @gen.engine
         self.doRequest()
-    """The ol get routine"""
     def get(self):
-        @asynchronous
-        @gen.engine
         self.doRequest()
    
     """make sure your origin header is allwoed to be sending data"""
@@ -52,23 +48,25 @@ class EventHandler(BaseHandler):
         return allowed
     
     """The meat"""   
+    def dosomething(self, data, callback):
+        z = NeoConnector().write_to_neo(data)
+        return callback(z)
+            
     def doRequest(self):
-        
         self.set_default_headers()
         url = self.request.uri
-        if True:#check_allowed(orig):
-            try:
-                query = urlparse(urllib.unquote(url),allow_fragments=False ).query
-                data = json.loads(query)
-                nc = NeoConnector()
-                nc.write_to_neo(data)
-            except IOError as e:
-                if debug:
-                    print e
-                self.write("nOK!")
-            else:
-                self.write("OK!")
-    
+        try:
+            query = urlparse(urllib.unquote(url),allow_fragments=False ).query
+            data = json.loads(query)
+            yield gen.Task(self.dosomething, data)
+             
+        except IOError as e:
+            if debug:
+                print e
+            self.write("nOK!")
+        else:
+            self.write("OK!")
+
      
 class DashboardHandler(tornado.web.RequestHandler): 
     def get(self):
