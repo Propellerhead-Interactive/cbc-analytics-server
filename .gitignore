@@ -1,2 +1,4 @@
 *.pyc
 config.py
+build
+node_modules
