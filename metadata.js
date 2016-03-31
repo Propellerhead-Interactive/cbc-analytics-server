@@ -47,7 +47,7 @@
                 trackingData.category = jsondata.tracking;
             }
             console.log("lanaReadJS: detected load", trackingData);
-            //lana.track("load", trackingData);
+            lana.track("load", trackingData);
 
             /* configure readJS for this page */
             var readJSConfig = {};
@@ -58,7 +58,7 @@
             }
             readJSConfig.cb = function(){
                 console.log("lanaReadJS: detected read", trackingData);
-                //lana.track("read", trackingData);
+                lana.track("read", trackingData);
             };
             window.readJSConfig = readJSConfig;
             
