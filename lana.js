@@ -325,6 +325,7 @@ window.lana = {
     properties.title = document.title;
 
     var event = {
+      visit: visitId,
       visitor: visitorId,
       id: generateId(),
       name: name,
