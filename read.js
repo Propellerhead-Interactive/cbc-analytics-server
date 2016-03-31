@@ -1,9 +1,3 @@
-var readJSConfig = window.readingJSConfig || {};
-if (!readJSConfig.el){ readJSConfig.el = ".article-text"; }
-if (!readJSConfig.cb){ readJSConfig.cb = function(){
-    "use strict";
-    alert("The article has been read");
-}; }
 /*
     Read.js assumes:
     1) The article width never exceeds the viewport width
@@ -44,13 +38,30 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
         /*
             initialize: set the interval at which the behaviour library will check the page for new activity
         */
-        initialize : function(callback){
+        initialize : function(o){
 
-            if (typeof(callback)!== "function"){
+            if (o === null || typeof(o) !== "object"){
+                console.log("ERROR: readJS.initialize() missing config object");
+                return;
+            }
+            if (typeof(o.cb)!== "function"){
                 console.log("ERROR: readJS.initialize() expected a callback function");
                 return;
             }
-            readJS.callback = callback;
+            if (typeof(o.el)!== "string" || o.el === ""){
+                console.log("ERROR: readJS.initialize() expected a dom node css selector");
+                return;
+            }
+            readJS.domNode = document.querySelector(o.el);
+            readJS.callback = o.cb;
+
+            //scroll event listener
+            window.addEventListener("scroll", readJS.handleScroll);
+            //tab focus event listener
+            document.addEventListener(readJS.getVisibilityProperties().eventName, readJS.handleVisibilityChange, false);
+            //onload event listener
+            window.addEventListener("load", readJS.handleLoad);
+            //set it all in motion
 
             //check if the reader is actually reading at a decaying rate
             readJS.readingWorker = window.setInterval(function(){
@@ -90,7 +101,7 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
                 var r = readJS.inView(readJS.domNode);
                 readJS.console("dom_node_inview_percent", r.dom_node_inview_percent, "dom_node_viewport_percent", r.dom_node_viewport_percent);
             }else{
-                console.log("ERROR: could not find the story body");
+                console.log("readJS ERROR: could not find the element to read");
             }
         },
         /*
@@ -98,7 +109,7 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
         */
         hasRead: function(){
             if (!!readJS.activity.read){
-                return;
+                return false;
             }
             if (readJS.activity.readingPoints > readJS.thresholds.readingPoint && readJS.activity.timeInView >= readJS.thresholds.timeInView){
                 readJS.activity.read = true;
@@ -107,9 +118,10 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
                 readJS.console("readJS: the user has read the article", readJS.activity.readingPoints);
                 readJS.console("readJS: ending interval ID", readJS.readingWorker);
                 window.clearInterval(readJS.readingWorker);
-            }else{
-                readJS.console("readingPoints:", readJS.activity.readingPoints, "timeInView:", readJS.activity.timeInView);
+                return true;
             }
+            readJS.console("readingPoints:", readJS.activity.readingPoints, "timeInView:", readJS.activity.timeInView);
+            return false;
         },
         /*
             addPoints() will recognize actions that will get us closer to the reading state
@@ -176,8 +188,11 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
             inViewport: utility function to determine if any part of the element in question is in the viewport
         */
         inViewport: function(el){
-            var rect = el.getBoundingClientRect();
-            return rect.bottom > 0 && rect.right > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+            if (!!el && typeof(el.getBoundingClientRect) === "function"){
+                var rect = el.getBoundingClientRect();
+                return rect.bottom > 0 && rect.right > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+            }
+            return false;
         },
         /*
             showScrollInfo: overlay display to show the maximum scroll depth of the user
@@ -235,7 +250,7 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
                 window.clearInterval(readJS.readingWorker);
             }else{
                 readJS.console("readJS: reinitializing after detecting tab is in focus");
-                readJS.initialize(readJS.callback);
+                readJS.initialize(window.readJSConfig);
             }
         },
         //give inView a dom node and it will tell you what percentage of it is inside the viewport
@@ -390,8 +405,7 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
             readJS.activity.readingPoints += readJS.activity.increment;
             readJS.reactivate();
         },
-        handleLoad : function(){
-            readJS.domNode = document.querySelector(readJSConfig.el);
+        handleLoad : function(el){
             readJS.domNode.addEventListener("click", readJS.handleClick);
             readJS.calculateCoordinates();
         },
@@ -420,21 +434,3 @@ if (!readJSConfig.cb){ readJSConfig.cb = function(){
     window.readJS = readJS;
 
 })();
-if (!!readJSConfig && !!readJSConfig.el && !!readJSConfig.cb){
-
-    //scroll event listener
-    window.addEventListener("scroll", readJS.handleScroll);
-
-    //tab focus event listener
-    document.addEventListener(readJS.getVisibilityProperties().eventName, readJS.handleVisibilityChange, false);
-
-    //onload event listener
-    window.addEventListener("load", readJS.handleLoad);
-
-    //set it all in motion
-    readJS.initialize(readJSConfig.cb);
-
-}
-
-
-
