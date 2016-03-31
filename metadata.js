@@ -3,10 +3,10 @@
     //get content ID
     var cid = document.location.pathname.match(/([0-9]{1}\.[0-9]+)$/);
     if (!cid){
-        console.log("analReadJS: ignoring because not in Polopoly");
+        console.log("lanaReadJS: ignoring because not in Polopoly");
         return;
     }else{
-        console.log("analReadJS: content id", cid);
+        console.log("lanaReadJS: content id", cid);
     }
     function handleData(resp){
         try{
@@ -15,7 +15,7 @@
             var jsondata = JSON.parse(resp.responseText);
             
             if (jsondata.type !== "story"){
-                console.log("analReadJS: ignoring because not an article");
+                console.log("lanaReadJS: ignoring because not an article");
                 return;
             }
             //get people, location, company, organization, subject from JSON
@@ -46,7 +46,7 @@
             if (!!jsondata.tracking){
                 trackingData.category = jsondata.tracking;
             }
-            console.log("analReadJS: detected load", trackingData);
+            console.log("lanaReadJS: detected load", trackingData);
             //lana.track("load", trackingData);
 
             /* configure readJS for this page */
@@ -57,7 +57,7 @@
                 readJSConfig.el = ".story-wrap";
             }
             readJSConfig.cb = function(){
-                console.log("analReadJS: detected read", trackingData);
+                console.log("lanaReadJS: detected read", trackingData);
                 //lana.track("read", trackingData);
             };
             window.readJSConfig = readJSConfig;
@@ -65,7 +65,7 @@
             readJS.initialize(readJSConfig);
 
         }catch(e){
-            console.log("analReadJS:ERROR");
+            console.log("lanaReadJS:ERROR");
             console.log(e);
         }
     }
