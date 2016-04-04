@@ -2,6 +2,8 @@ MERGE (n:User { name:"12345" }) return id(n) as nid;
 MERGE (n:Session { name:"123456" }) return id(n) as nid;
 MATCH (user:User {name:"12345"}),(session:Session { name : "123456" })  MERGE  (user)-[r:STARTED]->(session)  RETURN r, user, session;
 MERGE (content:Content:Story { name:"Orion Mars-mission launch delayed for 24 hours - Technology & Science - CBC", url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-mission-launch-delayed-for-24-hours-1.342598?statsDebug=true", publicationdate:"1417713392711" }) return content;
+
+
 MATCH (content:Content{url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-mission-launch-delayed-for-24-hours-1.342598?statsDebug=true"}),(session:Session{name:"123456"}) MERGE (session)-[k:LOADED]->(content)  RETURN k;
 MATCH (content:Content{url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-mission-launch-delayed-for-24-hours-1.342598?statsDebug=true"}),(session:Session{name:"123456"}) MERGE (session)-[k:READ]->(content)  RETURN k;
 
@@ -21,6 +23,9 @@ MATCH (content:Content{url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-m
 MERGE (organization:Organization { name:"who" }) ;
 MATCH (content:Content{url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-mission-launch-delayed-for-24-hours-1.342598?statsDebug=true"}),(organization:Organization { name:"who" }) MERGE (content)-[k:TAGGED_O]->(organization)  RETURN k;
 
+
+
+
 #nesting - up to 5 items
 MERGE (category:Category { name:"news" }) ;
 MERGE (category:Category { name:"technology" }); 
@@ -30,14 +35,15 @@ MATCH (category:Category { name:"news" }),(category2:Category { name:"technology
 MATCH (content:Content{url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-mission-launch-delayed-for-24-hours-1.342598?statsDebug=true"}),(category2:Category { name:"technology" }) MERGE (content)-[k:TAGGED_CAT]->(category2)  RETURN k;
 
 
+MERGE (year_month:Year_Month {id:"201603"});
+MERGE (day:Day {day:"23",date:"20160323" });
+MATCH (year_month:Year_Month {id:"201603"}),(day:Day {date:"20160323"}) MERGE (year_month)-[:PART_OF]->(day);
+MATCH (day:Day{date:"20160323"}), (content:Content{url:"http://www.qa.nm.cbc.ca/news/technology/orion-mars-mission-launch-delayed-for-24-hours-1.342598?statsDebug=true"}) MERGE (content)-[:PUBLISHED]-(day);
 
-
-
-
-
-
-
-
+MERGE (year_month:Year_Month {id:"201603"});
+MERGE (day:Day {day:"31",date:"20160331" });
+MATCH (year_month:Year_Month {id:"201603"}),(day:Day {date:"20160331"}) MERGE (year_month)-[:PART_OF]->(day);
+MATCH (session:Session{name:"123456"}),(day:Day {date:"20160331"}) MERGE (session)-[:INITIATED]->(day);
 
 {
   "visit": "1459451668464-99d9d637-e97f-4c47-a3a3-bc9533784eac",

@@ -1,5 +1,6 @@
 from py2neo import Graph, Path
 import config
+import datetime
 
 
 pw = config.neo4j_pw
@@ -17,6 +18,9 @@ class NeoConnector():
         try:
             uid = data["id"] 
             visitor = data["visitor"]   #user - permenant cookie
+            
+            visit_timestamp = visitor.split("-")[0]
+            
             session = data["visit"]   #user - permenant cookie
             
             action = data["name"]
@@ -35,7 +39,7 @@ class NeoConnector():
             
             publicationDate = data["properties"]["publicationDate"] #  day-[:PART_OF] -> (month/year)
             
-            tag = data["properties"]["tagged"]["tag"] #SUBJECT (  :TAGGED_S)
+            tags = data["properties"]["tagged"]["tag"] #SUBJECT (  :TAGGED_S)
             
             contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
             category_ss1 = data["properties"]["category"]["subsection1"]  # :BELONGS_TO ->(contentarea)
@@ -43,25 +47,76 @@ class NeoConnector():
             category_ss3 = data["properties"]["category"]["subsection3"] # :BELONGS_TO -> subsection2
             category_ss4 = data["properties"]["category"]["subsection4"] # :BELONGS_TO -> subsection3
             
-            #READ AND VISITED ARE NOW  SEPARETE RELATIONSHIPS
+            #READ AND VISITED ARE NOW  SEPARETE RELATIONSHIPSc
+            print "HELLO"
+            print int(publicationDate)
+            #print category_ss1, category_ss2, category_ss3, category_ss4
+
+            #figure out the dates
+            publicationDateParts = datetime.datetime.utcfromtimestamp((float(publicationDate)/1000))
+            pd_ym = "%s%s" % (publicationDateParts.year , publicationDateParts.month )
+            pd_dd = str(publicationDateParts.day).zfill(2)
+            pd_ymd = "%s%s" % (pd_ym, pd_dd)
             
-            print visitor, action, timestamp, url, title, company, organization, tag, publicationDate
-            print category_ss1, category_ss2, category_ss3, category_ss4
-
-
-            #visitor / session
+            timeStampParts = datetime.datetime.utcfromtimestamp(float(visit_timestamp)/1000)
+            ts_ym = "%s%s" % (timeStampParts.year , timeStampParts.month )
+            ts_dd = str(timeStampParts.day).zfill(2)
+            ts_ymd = "%s%s" % (pd_ym, pd_dd)
+            
+         
+            tx_dates = graph.cypher.begin()
+            
+            #tx_dates.append("MATCH (m) detach delete m;")
+            
+            d11 = "MERGE (year_month:Year_Month {id:{ym}});"
+            d12 = "MERGE (day:Day {day:{dd},date:{ymd} });"
+            d13 = "MATCH (year_month:Year_Month {id:{ym}}),(day:Day {date:{ymd}}) MERGE (year_month)-[:PART_OF]->(day);"
+            
+            
+            tx_dates.append(d11, ym=pd_ym)
+            tx_dates.append(d12, ymd = pd_ymd, dd=pd_dd)
+            tx_dates.append(d13, ym=pd_ym, ymd=pd_ymd)
+            
+            tx_dates.append(d11, ym=ts_ym)
+            tx_dates.append(d12, ymd = ts_ymd, dd = ts_dd)
+            tx_dates.append(d13, ym=ts_ym, ymd=ts_ymd)
+            tx_dates.commit()
+            
             tx = graph.cypher.begin()
             tx.append("merge (n:User { name:{visitor} }) return id(n) as nid",visitor=visitor )
             tx.append("merge (n:Sesson { id : {session} }) return id(n) as nid",session=session)
+            
+            
+            tx.append("MATCH (m:Sesson { id : {session} }),(n:User { name:{visitor} }) MERGE (n)-[:STARTED]->(m)",visitor=visitor ,session=session)
+            
+            
             result = tx.commit()
+
             #match user to session
             
             tx_user_session = graph.cypher.begin()
-            ux = "MATCH (user:User {name:{visitor}}),(session:Session {name:{name}}) MERGE (user)-[r:STARTED]->(session)  RETURN r "
-            tx_user_session.append(ux,  user_uid=visitor, visitor=visitor)
-            cq = "MERGE (content:Content:{contenttype} { title:{title}, url:{url}, publicationdate:{publicationDate} }) return content;"
-            tx_user_session.append(cq, contenttype=contenttype, url=url,title=title,publicationDate=publicationDate )
+            
+            ux = "MATCH (user:User {name:{visitor}}),(session:Session {id:{name}}) MERGE (user)-[r:STARTED]->(session)  RETURN r "
+            tx_user_session.append(ux,  name=session, visitor=visitor)
+            cq = "MERGE (content:Content { name:{title}, url:{url}, publicationDate:{publicationDate} }) return content;"
+            cq_label  = "MATCH (n:Content {url:{url}}) set n :%s " % contenttype
+            
+            tx_user_session.append(cq,url=url,title=title,publicationDate=publicationDate )
+            tx_user_session.append(cq_label,url=url)
+            tx_user_session.append("MATCH (day:Day {date:{pd_ymd}}), (content:Content{url:{url}}) MERGE (content)-[:PUBLISHED]-(day);", url=url, pd_ymd=pd_ymd)
+            tx_user_session.append("MATCH (session:Session { id:{session} } ), ( day:Day { date:{ts_ymd} } ) MERGE (session)-[:INITIATED]->(day)", session=session, ts_ymd=ts_ymd )
+            
+            #check for load type (read, visited)
+            if action=="load":
+                tx_user_session.append("MATCH (m:Sesson { id : {session} }),(n { url:{url} }) MERGE (m)-[:LOADED]->(n)",url=url ,session=session)
+            else:
+                tx_user_session.append("MATCH (m:Sesson { id : {session} }),(n { url:{url} }) MERGE (m)-[:VISITED]->(n)",url=url ,session=session)
+                
             tx_user_session.commit()
+            
+            #usersession connect to 
+            
+            
             
             
             r_tx = graph.cypher.begin()
@@ -74,38 +129,20 @@ class NeoConnector():
             for company in companies:
                 r_tx.append( "MERGE (company:Company { name:{company} }) ;",company=company) 
                 r_tx.append("MATCH (content:Content{url:{url}}),(company:Company { name:{company}}) MERGE (content)-[k:TAGGED_C]->(company)  RETURN k;",company=company, url=url)
-                
             for organization in organizations:
                 r_tx.append("MERGE (organization:Organization { name:{organization}}) ;", organization=organization)
-                r_tx.append("MATCH (content:Content{url:{url}}),(organization:Organization { name:{organization}) MERGE (content)-[k:TAGGED_O]->(organization)  RETURN k;", organization=organization, url=url)
-             r_tx.commit()
-                
-            
-            
+                r_tx.append("MATCH (content:Content {url:{url} }),(organization:Organization { name:{organization}}) MERGE (content)-[k:TAGGED_O]->(organization)  RETURN k;", organization=organization, url=url)
+            for tag in tags:
+                r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=tag)
+                r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=tag, url=url)
+            r_tx.commit()
             
             #tx_categories = graph.cypher.begin()
             #MERGE (location:Location { name:"Toronto" }) ;
 
             #tx_categories.append()
             
-            page_nid = result_page[0][0]["nid"]
-            tx2 = graph.cypher.begin()
-            if action=="read":
-                tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) RETURN id(r)", user_uid=visitor, url=url)
-                tx2.append("MATCH (user:Person {name:{user_uid}})-[r:VISITED]->(p:Page { url : {url} }) SET r.read = true, r.last_read_time={lvt} RETURN id(r)", lvt=timestamp, user_uid=visitor, url=url)
-            else:
-                tx2.append("MATCH (user:Person {name:{user_uid}}) , (p:Page { url : {url} })  MERGE (user)-[r:VISITED]->(p) RETURN id(r)",user_uid=visitor, url=url)
-                tx2.append("MATCH (user:Person {name:{user_uid}})-[r:VISITED]->(p:Page { url : {url} }) SET r.read = true, r.last_read_time={lvt} RETURN id(r)", lvt=timestamp, user_uid=visitor, url=url)
-        
-            result_visited = tx2.commit()
-            tx2 = graph.cypher.begin()
-            for c2 in category:
-                tx2.append("merge (n:Category { name : {name} }) return id(n) as nid",name=c2 )
-            result_cat = tx2.commit()
-            tx3 = graph.cypher.begin()
-            for c in category:
-                tx3.append("MATCH (n:Category { name : {name} }) , (p:Page { url : {url} })  MERGE (n)<-[r:BELONGS]-(p) RETURN id(r)", name=c, url=url)
-            z = tx3.commit()
+         
         except IOError as e:
             if debug:
                 print e

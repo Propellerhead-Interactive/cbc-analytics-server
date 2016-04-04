@@ -45,20 +45,24 @@ class EventHandler(BaseHandler):
     """The meat"""   
     def dosomething(self, data, callback):
         z = NeoConnector().write_to_neo(data)
-        print "hi"
+        print "performing NEO write"
         return callback(z)
             
     def doRequest(self):
         self.set_default_headers()
         url = self.request.uri
+        print url
         try:
             query = urlparse(urllib.unquote(url),allow_fragments=False).query
             data = json.loads(query)
+            
+            z = NeoConnector().write_to_neo(data)
             #yield gen.Task(self.dosomething, data)
         except IOError as e:
             print e
             self.write("nOK!")
         else:
+           
             self.write("OK!")
 
      
