@@ -32,8 +32,6 @@ class NeoConnector():
             
            
             contenttype =  data["properties"]["category"]["contenttype"] # LABEL ON CONTENT
-            contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
-            
             companies =  []
             organizations = []
             locations = []
@@ -150,17 +148,19 @@ class NeoConnector():
             tx_categories = graph.cypher.begin()
             categories = data["properties"]["category"]
             
-            
-            for x in range(1, 4): 
-                ss = "subsection%s" % str(x)
-                
-                if (ss) in categories:
-                    tx_categories.append("MERGE (category:Category {name:{name}}) return category", categories[ss])
-                    if x==1:
-                        tx_categories.append("MATCH (content:Content {url:{url}}), (category:Category {name:{name}}) MERGE category-[:BELONGS_TO]->(content)", url=url, name=categories[ss])
-                    else:
-                        ssm = "subsection%s" % str(x-1)
-                        tx_categories.append("MATCH (category:Category {name:{name}}), (category:Category {name:{name2}}) MERGE category-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
+            contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
+            if "contentarea" in categories:
+                tx_categories.append("MERGE (c:ContentArea {name:{name}})", name=contentarea)
+                tx_categories.append("MATCH (content:Content {url:{url}}), (c:ContentArea {name:{name}}) MERGE (c)-[:TAGGED_CAT]->(content)", url=url, name=contentarea)
+                for x in range(1, 4): 
+                    ss = "subsection%s" % str(x)
+                    if (ss) in categories:
+                        tx_categories.append("MERGE (category:Category {name:{name}}) return category", categories[ss])
+                        if x==1:
+                            tx_categories.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], contentarea)
+                        else:
+                            ssm = "subsection%s" % str(x-1)
+                            tx_categories.append("MATCH (category:Category {name:{name}}), (category:Category {name:{name2}}) MERGE category-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
             
             tx_categories.commit()
             

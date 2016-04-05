@@ -18,7 +18,7 @@ class WebsiteTasks(TaskSet):
         n = random.randint(1, 5) #page
         #nc = interests.interests[int(n/10)] #category
         r = str(random.randint(1, 5))
-        titles = ["Orion Mars-mission launch delayed for 24 hours - Technology & Science - CBC", "Rob ford dies", "Jian Makes a cake", "Sarah Fulford is cool","YAY" ,"Mansbridge FTW"]
+        titles = ["Orion Mars-mission launch delayed for 24 hours - Technology & Science - CBC", "Rob ford dies", "Jian Makes a cake", "Sarah Fulford is cool","YAY " ,"Mansbridge FTW"]
         urls = ["https://cbc.ca/1","https://cbc.ca/2","https://cbc.ca/3","https://cbc.ca/4","https://cbc.ca/5","https://cbc.ca/6"  ]
         x="viewed"
         if r==2:
