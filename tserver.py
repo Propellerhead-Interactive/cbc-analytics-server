@@ -51,7 +51,6 @@ class EventHandler(BaseHandler):
     def doRequest(self):
         self.set_default_headers()
         url = self.request.uri
-        print url
         try:
             query = urlparse(urllib.unquote(url),allow_fragments=False).query
             data = json.loads(query)

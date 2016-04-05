@@ -1,3 +1,4 @@
 tornado==4.3
 Tornado-JSON==1.2.2
 py2neo==2.0.8
+locustio==0.7.3

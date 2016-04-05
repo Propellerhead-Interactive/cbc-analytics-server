@@ -32,24 +32,31 @@ class NeoConnector():
             
            
             contenttype =  data["properties"]["category"]["contenttype"] # LABEL ON CONTENT
-            companies = data["properties"]["tagged"]["company"] # :TAGGED_C
-            organizations = data["properties"]["tagged"]["organization"]  # :TAGGED_O
-            locations = data["properties"]["tagged"]["location"]  # :TAGGED_L
-            people = data["properties"]["tagged"]["person"]  # :TAGGED_P
+            contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
+            
+            companies =  []
+            organizations = []
+            locations = []
+            people = []
+            tags = []
+            
+            if "company" in data["properties"]["tagged"]:
+                companies = data["properties"]["tagged"]["company"] # :TAGGED_C
+            if "organization" in data["properties"]["tagged"]:
+                organizations = data["properties"]["tagged"]["organization"]  # :TAGGED_O
+            if "location" in data["properties"]["tagged"]:
+                locations = data["properties"]["tagged"]["location"]  # :TAGGED_L
+            if "people" in data["properties"]["tagged"]:
+                people = data["properties"]["tagged"]["person"]  # :TAGGED_P
+            if "tag" in data["properties"]["tagged"]:
+                tags = data["properties"]["tagged"]["tag"] #SUBJECT (  :TAGGED_S)
             
             publicationDate = data["properties"]["publicationDate"] #  day-[:PART_OF] -> (month/year)
             
-            tags = data["properties"]["tagged"]["tag"] #SUBJECT (  :TAGGED_S)
             
-            contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
-            category_ss1 = data["properties"]["category"]["subsection1"]  # :BELONGS_TO ->(contentarea)
-            category_ss2 = data["properties"]["category"]["subsection2"] # :BELONGS_TO -> subsection1
-            category_ss3 = data["properties"]["category"]["subsection3"] # :BELONGS_TO -> subsection2
-            category_ss4 = data["properties"]["category"]["subsection4"] # :BELONGS_TO -> subsection3
-            
+           
             #READ AND VISITED ARE NOW  SEPARETE RELATIONSHIPSc
-            print "HELLO"
-            print int(publicationDate)
+          
             #print category_ss1, category_ss2, category_ss3, category_ss4
 
             #figure out the dates
@@ -135,12 +142,28 @@ class NeoConnector():
             for tag in tags:
                 r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=tag)
                 r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=tag, url=url)
+            
             r_tx.commit()
             
-            #tx_categories = graph.cypher.begin()
-            #MERGE (location:Location { name:"Toronto" }) ;
-
-            #tx_categories.append()
+            
+            
+            tx_categories = graph.cypher.begin()
+            categories = data["properties"]["category"]
+            
+            
+            for x in range(1, 4): 
+                ss = "subsection%s" % str(x)
+                
+                if (ss) in categories:
+                    tx_categories.append("MERGE (category:Category {name:{name}}) return category", categories[ss])
+                    if x==1:
+                        tx_categories.append("MATCH (content:Content {url:{url}}), (category:Category {name:{name}}) MERGE category-[:BELONGS_TO]->(content)", url=url, name=categories[ss])
+                    else:
+                        ssm = "subsection%s" % str(x-1)
+                        tx_categories.append("MATCH (category:Category {name:{name}}), (category:Category {name:{name2}}) MERGE category-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
+            
+            tx_categories.commit()
+            
             
          
         except IOError as e:
