@@ -143,8 +143,6 @@ class NeoConnector():
             
             r_tx.commit()
             
-            
-            
             tx_categories = graph.cypher.begin()
             categories = data["properties"]["category"]
             
