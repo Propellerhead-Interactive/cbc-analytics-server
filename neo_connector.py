@@ -152,13 +152,16 @@ class NeoConnector():
                 tx_categories.append("MATCH (content:Content {url:{url}}), (c:ContentArea {name:{name}}) MERGE (c)-[:TAGGED_CAT]->(content)", url=url, name=contentarea)
                 for x in range(1, 4): 
                     ss = "subsection%s" % str(x)
+                    print ss
+                    
                     if (ss) in categories:
-                        tx_categories.append("MERGE (category:Category {name:{name}}) return category", categories[ss])
+                        print categories[ss]
+                        tx_categories.append("MERGE (category:Category {name:{name}}) return category", name=categories[ss])
                         if x==1:
-                            tx_categories.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], contentarea)
+                            tx_categories.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], name2=contentarea)
                         else:
                             ssm = "subsection%s" % str(x-1)
-                            tx_categories.append("MATCH (category:Category {name:{name}}), (category:Category {name:{name2}}) MERGE category-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
+                            tx_categories.append("MATCH (category:Category {name:{name}}), (category2:Category {name:{name2}}) MERGE (category)-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
             
             tx_categories.commit()
             
