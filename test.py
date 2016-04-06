@@ -54,13 +54,16 @@ class WebsiteTasks(TaskSet):
 }
 """ % (r,r,x, titles[n] ,urls[n] )
         url = """/lana/events?%s""" % (json)
-        
-        self.client.get(url)
+        try:
+            self.client.get(url)
+        except IOError as e:
+            print e
+            
    
 
 class WebsiteUser(HttpLocust):
     task_set = WebsiteTasks
-    host = "http://localhost:8888"
+    host = "http://cbc.propellerheadlabs.io:8888"
     min_wait = 1
     max_wait = 3
     

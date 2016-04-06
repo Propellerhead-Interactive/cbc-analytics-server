@@ -89,10 +89,10 @@ class NeoConnector():
             
             tx = graph.cypher.begin()
             tx.append("merge (n:User { name:{visitor} }) return id(n) as nid",visitor=visitor )
-            tx.append("merge (n:Sesson { id : {session} }) return id(n) as nid",session=session)
+            tx.append("merge (n:Session { id : {session} }) return id(n) as nid",session=session)
             
             
-            tx.append("MATCH (m:Sesson { id : {session} }),(n:User { name:{visitor} }) MERGE (n)-[:STARTED]->(m)",visitor=visitor ,session=session)
+            tx.append("MATCH (m:Session { id : {session} }),(n:User { name:{visitor} }) MERGE (n)-[:STARTED]->(m)",visitor=visitor ,session=session)
             
             
             result = tx.commit()
@@ -113,9 +113,9 @@ class NeoConnector():
             
             #check for load type (read, visited)
             if action=="load":
-                tx_user_session.append("MATCH (m:Sesson { id : {session} }),(n { url:{url} }) MERGE (m)-[:LOADED]->(n)",url=url ,session=session)
+                tx_user_session.append("MATCH (m:Session { id : {session} }),(n { url:{url} }) MERGE (m)-[:LOADED]->(n)",url=url ,session=session)
             else:
-                tx_user_session.append("MATCH (m:Sesson { id : {session} }),(n { url:{url} }) MERGE (m)-[:VISITED]->(n)",url=url ,session=session)
+                tx_user_session.append("MATCH (m:Session { id : {session} }),(n { url:{url} }) MERGE (m)-[:VISITED]->(n)",url=url ,session=session)
                 
             tx_user_session.commit()
             
