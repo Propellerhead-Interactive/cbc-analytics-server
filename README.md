@@ -4,6 +4,8 @@ Now with extra NEO!
 
 ## CONFIGURE
 
+* pip install -t requirements.txt 
+
 Edit the config.py file 
 * neo4j server, 
 * neo4j password (assumed username is neo4j) 

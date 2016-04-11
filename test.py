@@ -1,3 +1,4 @@
+#pip install -t requirements.txt 
 #locust -f test.py
 
 from locust import HttpLocust, TaskSet, task
