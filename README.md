@@ -2,14 +2,28 @@
 
 Now with extra NEO!
 
-## CONFIGURE
+## INSTALL
 
-* pip install -t requirements.txt 
+* ssh
+* $ cd /var/opt/anal
+* $ (sudo) git clone <repo-path> .
 
-Edit the config.py file 
+Create/Edit the config.py file 
 * neo4j server, 
 * neo4j password (assumed username is neo4j) 
 * server port 
+
+* $ sudo /etc/init.d/tornado start
+
+## UPDATE SERVER CODE
+
+* ssh
+* $ cd /var/opt/anal
+* $ (sudo) git pull
+* $ sudo /etc/init.d/tornado stop
+* $ sudo /etc/init.d/tornado start
+
+
 
 ## IMPLEMENTATION
 
@@ -77,8 +91,12 @@ Your API JSON string should look like:
 }
 ```
 
+## CONSOLE
 
-## Running
+* $ cd /var/lib/neo4j
+* $ ./bin/neo4j-shell
+
+## RUNNING LOCALLY
 
 > tornado -f tserver.py
 
