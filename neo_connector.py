@@ -1,6 +1,8 @@
 from py2neo import Graph, Path
 import config
 import datetime
+import calendar
+import time
 
 
 pw = config.neo4j_pw
@@ -19,7 +21,7 @@ class NeoConnector():
             uid = data["id"] 
             visitor = data["visitor"]   #user - permenant cookie
             
-            visit_timestamp = visitor.split("-")[0]
+            visit_timestamp = calendar.timegm(time.gmtime()) * 1000#visitor.split("-")[0]
             
             session = data["visit"]   #user - permenant cookie
             
