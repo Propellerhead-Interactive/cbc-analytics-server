@@ -117,7 +117,7 @@ class NeoConnector():
             if action=="load":
                 tx_user_session.append("MATCH (m:Session { id : {session} }),(n { url:{url} }) MERGE (m)-[:LOADED]->(n)",url=url ,session=session)
             else:
-                tx_user_session.append("MATCH (m:Session { id : {session} }),(n { url:{url} }) MERGE (m)-[:VISITED]->(n)",url=url ,session=session)
+                tx_user_session.append("MATCH (m:Session { id : {session} }),(n { url:{url} }) MERGE (m)-[:READ]->(n)",url=url ,session=session)
                 
             tx_user_session.commit()
             
@@ -157,13 +157,13 @@ class NeoConnector():
                     print ss
                     
                     if (ss) in categories:
-                        print categories[ss]
-                        tx_categories.append("MERGE (category:Category {name:{name}}) return category", name=categories[ss])
-                        if x==1:
-                            tx_categories.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], name2=contentarea)
-                        else:
-                            ssm = "subsection%s" % str(x-1)
-                            tx_categories.append("MATCH (category:Category {name:{name}}), (category2:Category {name:{name2}}) MERGE (category)-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
+                        if categories[ss]!="":
+                            tx_categories.append("MERGE (category:Category {name:{name}}) return category", name=categories[ss])
+                            if x==1:
+                                tx_categories.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], name2=contentarea)
+                            else:
+                                ssm = "subsection%s" % str(x-1)
+                                tx_categories.append("MATCH (category:Category {name:{name}}), (category2:Category {name:{name2}}) MERGE (category)-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
             
             tx_categories.commit()
             
