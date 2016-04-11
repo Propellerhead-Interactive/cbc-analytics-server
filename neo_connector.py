@@ -39,6 +39,7 @@ class NeoConnector():
             locations = []
             people = []
             tags = []
+            subjects = []
             
             
             if "company" in data["properties"]["tagged"]:
