@@ -40,16 +40,19 @@ class NeoConnector():
             people = []
             tags = []
             
+            
             if "company" in data["properties"]["tagged"]:
                 companies = data["properties"]["tagged"]["company"] # :TAGGED_C
             if "organization" in data["properties"]["tagged"]:
                 organizations = data["properties"]["tagged"]["organization"]  # :TAGGED_O
             if "location" in data["properties"]["tagged"]:
                 locations = data["properties"]["tagged"]["location"]  # :TAGGED_L
-            if "people" in data["properties"]["tagged"]:
+            if "person" in data["properties"]["tagged"]:
                 people = data["properties"]["tagged"]["person"]  # :TAGGED_P
             if "tag" in data["properties"]["tagged"]:
                 tags = data["properties"]["tagged"]["tag"] #SUBJECT (  :TAGGED_S)
+            if "subject" in data["properties"]["tagged"]:
+                subjects = data["properties"]["tagged"]["subject"] #SUBJECT (  :TAGGED_S)
             
             publicationDate = data["properties"]["publicationDate"] #  day-[:PART_OF] -> (month/year)
             
@@ -139,9 +142,12 @@ class NeoConnector():
             for organization in organizations:
                 r_tx.append("MERGE (organization:Organization { name:{organization}}) ;", organization=organization)
                 r_tx.append("MATCH (content:Content {url:{url} }),(organization:Organization { name:{organization}}) MERGE (content)-[k:TAGGED_O]->(organization)  RETURN k;", organization=organization, url=url)
-            for tag in tags:
-                r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=tag)
-                r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=tag, url=url)
+           # for tag in tags:
+        #        r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=tag)
+         #       r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=tag, url=url)
+            for subject in subjects:
+                r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=subject)
+                r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=subject, url=url)
             
             r_tx.commit()
             
