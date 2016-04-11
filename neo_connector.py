@@ -66,7 +66,7 @@ class NeoConnector():
             timeStampParts = datetime.datetime.utcfromtimestamp(float(visit_timestamp)/1000)
             ts_ym = "%s%s" % (timeStampParts.year , timeStampParts.month )
             ts_dd = str(timeStampParts.day).zfill(2)
-            ts_ymd = "%s%s" % (pd_ym, pd_dd)
+            ts_ymd = "%s%s" % (ts_ym, ts_dd)
             
          
             tx_dates = graph.cypher.begin()
@@ -108,7 +108,7 @@ class NeoConnector():
             
             tx_user_session.append(cq,url=url,title=title,publicationDate=publicationDate )
             tx_user_session.append(cq_label,url=url)
-            tx_user_session.append("MATCH (day:Day {date:{pd_ymd}}), (content:Content{url:{url}}) MERGE (content)-[:PUBLISHED]-(day);", url=url, pd_ymd=pd_ymd)
+            tx_user_session.append("MATCH (day:Day {date:{pd_ymd}}), (content:Content{url:{url}}) MERGE (content)-[:PUBLISHED]->(day);", url=url, pd_ymd=pd_ymd)
             tx_user_session.append("MATCH (session:Session { id:{session} } ), ( day:Day { date:{ts_ymd} } ) MERGE (session)-[:INITIATED]->(day)", session=session, ts_ymd=ts_ymd )
             
             #check for load type (read, visited)
