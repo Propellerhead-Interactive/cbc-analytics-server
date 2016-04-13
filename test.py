@@ -18,7 +18,7 @@ class WebsiteTasks(TaskSet):
         variant = random.randint(1, 20) #user
         n = random.randint(1, 5) #page
         #nc = interests.interests[int(n/10)] #category
-        r = str(random.randint(1, 5))
+        r = str(random.randint(1, 523412364356))
         titles = ["Orion Mars-mission launch delayed for 24 hours - Technology & Science - CBC", "Rob ford dies", "Jian Makes a cake", "Sarah Fulford is cool","YAY " ,"Mansbridge FTW"]
         urls = ["https://cbc.ca/1","https://cbc.ca/2","https://cbc.ca/3","https://cbc.ca/4","https://cbc.ca/5","https://cbc.ca/6"  ]
         x="viewed"
@@ -64,7 +64,7 @@ class WebsiteTasks(TaskSet):
 
 class WebsiteUser(HttpLocust):
     task_set = WebsiteTasks
-    host = "http://cbc.propellerheadlabs.io:8888"
+    host = "http://localhost:8888"
     min_wait = 1
     max_wait = 3
     

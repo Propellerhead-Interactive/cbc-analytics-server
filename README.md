@@ -23,6 +23,26 @@ Create/Edit the config.py file
 * $ sudo /etc/init.d/tornado stop
 * $ sudo /etc/init.d/tornado start
 
+##NEO4J Tuning
+
+* CREATE CONSTRAINT ON (c:Content) ASSERT c.url IS UNIQUE
+* CREATE CONSTRAINT ON (s:Session) ASSERT s.id IS UNIQUE
+* CREATE CONSTRAINT ON (u:User) ASSERT u.name IS UNIQUE
+* CREATE CONSTRAINT ON (d:Year_Month) ASSERT d.id IS UNIQUE #
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE #
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE #
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE #
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE #
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE #
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE #
+
+
+* CREATE INDEX ON :Content(url)
+* CREATE INDEX ON :Session(id)
+* CREATE INDEX ON :User(name)
+* CREATE INDEX ON :Year_Month(id)
+* CREATE INDEX ON :Day(date)
+
 
 
 ## IMPLEMENTATION

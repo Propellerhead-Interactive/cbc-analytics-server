@@ -11,6 +11,7 @@ from tornado import ioloop as IOLoop
 from tornado.httpserver import HTTPServer
 import json
 import config
+import datetime
 
 debug=True
 
@@ -49,6 +50,8 @@ class EventHandler(BaseHandler):
         return callback(z)
             
     def doRequest(self):
+        start_time = datetime.datetime.now()
+       
         self.set_default_headers()
         url = self.request.uri
         try:
@@ -57,17 +60,40 @@ class EventHandler(BaseHandler):
             
             z = NeoConnector().write_to_neo(data)
             #yield gen.Task(self.dosomething, data)
+            
+            end_time = datetime.datetime.now()
+            time_diff = end_time - start_time
+            
         except IOError as e:
             print e
             self.write("nOK!")
         else:
+            
            
-            self.write("OK!")
+            self.write("OK! %d MS" % time_diff)
+
+class IndexHandler(tornado.web.RequestHandler): 
+    def get(self):
+        self.write("Hi!");       
 
      
 class DashboardHandler(tornado.web.RequestHandler): 
     def get(self):
-        self.write("Hi!");       
+        try:
+            self.set_default_headers()
+            self.set_header('Content-type', 'text/html')
+            users, content, sessions, loads, reads = NeoConnector().read_stats()
+            
+            l =  int(loads[0][0])
+            if l ==0:
+                pct=0
+            else:
+                pct=int(reads[0][0])/int(loads[0][0])
+                
+            self.render("dashboard.html", users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct)
+        except IOError as e:
+            print e[1]
+            self.write("WHU?!")     
 
 def make_app():
     #tornado.autoreload.start()
@@ -78,7 +104,9 @@ def make_app():
         (r"/read.js", ReadJSHandler),
         (r"/lana/events", EventHandler),
         (r"/lana/visits", EventHandler),
-        (r"/", DashboardHandler),
+        (r"/", IndexHandler),
+        (r"/dboard", DashboardHandler),
+        
         
     ])
 

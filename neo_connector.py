@@ -16,20 +16,36 @@ class NeoConnector():
     def __init__(self):
         """just set it up yo"""
         
+    def read_stats(self):
+        """reads the stats yo"""
+        try:
+            users = graph.cypher.execute("MATCH (n:User) return count(n)")
+            content = graph.cypher.execute("MATCH (n:Content) return count(n)")
+            sessions = graph.cypher.execute("MATCH (n:Session) return count(n)")
+            loads = graph.cypher.execute("MATCH (n)-[k:LOAD]-(m) return count(k)")
+            reads = graph.cypher.execute("MATCH (n)-[k:READ]-(m) return count(k)")
+            
+            
+            
+            a= users, content, sessions, loads, reads
+            return a
+        except IOError as e:
+            if debug:
+                print e
+            return None
+      
+        
     def write_to_neo(self, data): 
         try:
+            visit_timestamp = calendar.timegm(time.gmtime()) #visitor.split("-")[0]
+            
+            
             uid = data["id"] 
             visitor = data["visitor"]   #user - permenant cookie
-            
-            visit_timestamp = calendar.timegm(time.gmtime()) * 1000#visitor.split("-")[0]
-            
             session = data["visit"]   #user - permenant cookie
-            
             action = data["name"]
             timestamp = data["time"]
             url = data["properties"]["url"] #content
-            
-            
             title = data["properties"]["title"] #property of content
             
            
@@ -57,19 +73,12 @@ class NeoConnector():
             
             publicationDate = data["properties"]["publicationDate"] #  day-[:PART_OF] -> (month/year)
             
-            
-           
-            #READ AND VISITED ARE NOW  SEPARETE RELATIONSHIPSc
-          
-            #print category_ss1, category_ss2, category_ss3, category_ss4
-
-            #figure out the dates
             publicationDateParts = datetime.datetime.utcfromtimestamp((float(publicationDate)/1000))
             pd_ym = "%s%s" % (publicationDateParts.year , publicationDateParts.month )
             pd_dd = str(publicationDateParts.day).zfill(2)
             pd_ymd = "%s%s" % (pd_ym, pd_dd)
             
-            timeStampParts = datetime.datetime.utcfromtimestamp(float(visit_timestamp)/1000)
+            timeStampParts = datetime.datetime.utcfromtimestamp(float(visit_timestamp))
             ts_ym = "%s%s" % (timeStampParts.year , timeStampParts.month )
             ts_dd = str(timeStampParts.day).zfill(2)
             ts_ymd = "%s%s" % (ts_ym, ts_dd)
@@ -94,13 +103,9 @@ class NeoConnector():
             tx_dates.commit()
             
             tx = graph.cypher.begin()
-            tx.append("merge (n:User { name:{visitor} }) return id(n) as nid",visitor=visitor )
-            tx.append("merge (n:Session { id : {session} }) return id(n) as nid",session=session)
-            
-            
+            tx.append("MERGE (n:User { name:{visitor} }) return id(n) as nid",visitor=visitor )
+            tx.append("MERGE (n:Session { id : {session} }) return id(n) as nid",session=session)
             tx.append("MATCH (m:Session { id : {session} }),(n:User { name:{visitor} }) MERGE (n)-[:STARTED]->(m)",visitor=visitor ,session=session)
-            
-            
             result = tx.commit()
 
             #match user to session
@@ -109,10 +114,11 @@ class NeoConnector():
             
             ux = "MATCH (user:User {name:{visitor}}),(session:Session {id:{name}}) MERGE (user)-[r:STARTED]->(session)  RETURN r "
             tx_user_session.append(ux,  name=session, visitor=visitor)
-            cq = "MERGE (content:Content { name:{title}, url:{url}, publicationDate:{publicationDate} }) return content;"
-            cq_label  = "MATCH (n:Content {url:{url}}) set n :%s " % contenttype
             
-            tx_user_session.append(cq,url=url,title=title,publicationDate=publicationDate )
+            cq = "MERGE (content:Content { url:{url}}) ON CREATE set content {name:'%s', publicationDate:'%s'} return content;" % (title, publicationDate) 
+            cq_label  = "MATCH (n:Content {url:{url}}) set n :%s " % contenttype
+           
+            tx_user_session.append(cq,url=url )
             tx_user_session.append(cq_label,url=url)
             tx_user_session.append("MATCH (day:Day {date:{pd_ymd}}), (content:Content{url:{url}}) MERGE (content)-[:PUBLISHED]->(day);", url=url, pd_ymd=pd_ymd)
             tx_user_session.append("MATCH (session:Session { id:{session} } ), ( day:Day { date:{ts_ymd} } ) MERGE (session)-[:INITIATED]->(day)", session=session, ts_ymd=ts_ymd )
@@ -127,9 +133,6 @@ class NeoConnector():
             
             #usersession connect to 
             
-            
-            
-            
             r_tx = graph.cypher.begin()
             for location in locations:
                 r_tx.append("MERGE (location:Location { name:{location} }) ;", location=location)
@@ -143,38 +146,27 @@ class NeoConnector():
             for organization in organizations:
                 r_tx.append("MERGE (organization:Organization { name:{organization}}) ;", organization=organization)
                 r_tx.append("MATCH (content:Content {url:{url} }),(organization:Organization { name:{organization}}) MERGE (content)-[k:TAGGED_O]->(organization)  RETURN k;", organization=organization, url=url)
-           # for tag in tags:
-        #        r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=tag)
-         #       r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=tag, url=url)
             for subject in subjects:
                 r_tx.append("MERGE (subject:Subject { name:{tag}})", tag=subject)
                 r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=subject, url=url)
-            
-            r_tx.commit()
-            
-            tx_categories = graph.cypher.begin()
+            #r_tx.commit()
+            #tx_categories = graph.cypher.begin()
             categories = data["properties"]["category"]
-            
             contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
             if "contentarea" in categories:
-                tx_categories.append("MERGE (c:ContentArea {name:{name}})", name=contentarea)
-                tx_categories.append("MATCH (content:Content {url:{url}}), (c:ContentArea {name:{name}}) MERGE (c)-[:TAGGED_CAT]->(content)", url=url, name=contentarea)
+                r_tx.append("MERGE (c:ContentArea {name:{name}})", name=contentarea)
+                r_tx.append("MATCH (content:Content {url:{url}}), (c:ContentArea {name:{name}}) MERGE (c)-[:TAGGED_CAT]->(content)", url=url, name=contentarea)
                 for x in range(1, 4): 
                     ss = "subsection%s" % str(x)
-                    print ss
-                    
                     if (ss) in categories:
                         if categories[ss]!="":
-                            tx_categories.append("MERGE (category:Category {name:{name}}) return category", name=categories[ss])
+                            r_tx.append("MERGE (category:Category {name:{name}}) return category", name=categories[ss])
                             if x==1:
-                                tx_categories.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], name2=contentarea)
+                                r_tx.append("MATCH (category:Category {name:{name}}), (ca:ContentArea {name:{name2}}) MERGE category-[:BELONGS_TO]->(ca)", name=categories[ss], name2=contentarea)
                             else:
                                 ssm = "subsection%s" % str(x-1)
-                                tx_categories.append("MATCH (category:Category {name:{name}}), (category2:Category {name:{name2}}) MERGE (category)-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
-            
-            tx_categories.commit()
-            
-            
+                                r_tx.append("MATCH (category:Category {name:{name}}), (category2:Category {name:{name2}}) MERGE (category)-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
+            r_tx.commit()
          
         except IOError as e:
             if debug:
