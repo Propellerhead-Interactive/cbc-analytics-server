@@ -63,14 +63,14 @@ class EventHandler(BaseHandler):
             
             end_time = datetime.datetime.now()
             time_diff = end_time - start_time
-            
+            print time_diff
         except IOError as e:
             print e
             self.write("nOK!")
         else:
             
            
-            self.write("OK! %d MS" % time_diff)
+            self.write("OK! %s MS" % time_diff)
 
 class IndexHandler(tornado.web.RequestHandler): 
     def get(self):

@@ -36,7 +36,8 @@ class WebsiteTasks(TaskSet):
     "tagged": {
       "company": ["cbc", "ITG", "wpp"],
       "organization": ["who","what"],
-      "tag": ["death","taxes"],
+      "person": ["Rob Ford","Joan Jett"],
+      "subject": ["death","taxes"],
       "location": ["toronto","beaverton","hamilton"]
     },
     "publicationDate": "1417713392711",

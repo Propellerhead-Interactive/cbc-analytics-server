@@ -115,7 +115,7 @@ class NeoConnector():
             ux = "MATCH (user:User {name:{visitor}}),(session:Session {id:{name}}) MERGE (user)-[r:STARTED]->(session)  RETURN r "
             tx_user_session.append(ux,  name=session, visitor=visitor)
             
-            cq = "MERGE (content:Content { url:{url}}) ON CREATE set content {name:'%s', publicationDate:'%s'} return content;" % (title, publicationDate) 
+            cq = "MERGE (content:Content { url:{url}}) ON CREATE set content={name:'%s', publicationDate:'%s'}" % (title, publicationDate) 
             cq_label  = "MATCH (n:Content {url:{url}}) set n :%s " % contenttype
            
             tx_user_session.append(cq,url=url )
@@ -123,6 +123,7 @@ class NeoConnector():
             tx_user_session.append("MATCH (day:Day {date:{pd_ymd}}), (content:Content{url:{url}}) MERGE (content)-[:PUBLISHED]->(day);", url=url, pd_ymd=pd_ymd)
             tx_user_session.append("MATCH (session:Session { id:{session} } ), ( day:Day { date:{ts_ymd} } ) MERGE (session)-[:INITIATED]->(day)", session=session, ts_ymd=ts_ymd )
             
+           
             #check for load type (read, visited)
             if action=="load":
                 tx_user_session.append("MATCH (m:Session { id : {session} }),(n { url:{url} }) MERGE (m)-[:LOADED]->(n)",url=url ,session=session)
@@ -151,6 +152,7 @@ class NeoConnector():
                 r_tx.append("MATCH (content:Content{url:{url}}),(subject:Subject { name:{tag}}) MERGE (content)-[k:TAGGED_S]->(subject)", tag=subject, url=url)
             #r_tx.commit()
             #tx_categories = graph.cypher.begin()
+            
             categories = data["properties"]["category"]
             contentarea =  data["properties"]["category"]["contentarea"] # :TAGEED_CAT
             if "contentarea" in categories:
@@ -167,6 +169,7 @@ class NeoConnector():
                                 ssm = "subsection%s" % str(x-1)
                                 r_tx.append("MATCH (category:Category {name:{name}}), (category2:Category {name:{name2}}) MERGE (category)-[:BELONGS_TO]->(category2)", name=categories[ss], name2=categories[ssm])
             r_tx.commit()
+            
          
         except IOError as e:
             if debug:
