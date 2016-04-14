@@ -24,17 +24,13 @@ class NeoConnector():
             sessions = graph.cypher.execute("MATCH (n:Session) return count(n)")
             loads = graph.cypher.execute("MATCH (n)-[k:LOAD]-(m) return count(k)")
             reads = graph.cypher.execute("MATCH (n)-[k:READ]-(m) return count(k)")
-            
-            
-            
             a= users, content, sessions, loads, reads
             return a
         except IOError as e:
             if debug:
                 print e
             return None
-      
-        
+ 
     def write_to_neo(self, data): 
         try:
             visit_timestamp = calendar.timegm(time.gmtime()) #visitor.split("-")[0]
@@ -115,7 +111,7 @@ class NeoConnector():
             ux = "MATCH (user:User {name:{visitor}}),(session:Session {id:{name}}) MERGE (user)-[r:STARTED]->(session)  RETURN r "
             tx_user_session.append(ux,  name=session, visitor=visitor)
             
-            cq = "MERGE (content:Content { url:{url}}) ON CREATE set content={name:'%s', publicationDate:'%s'}" % (title, publicationDate) 
+            cq = "MERGE (content:Content { url:{url}}) ON CREATE set content={url: '%s',name:'%s', publicationDate:'%s'}" % (url, title.replace("'", r"\'")  , publicationDate) 
             cq_label  = "MATCH (n:Content {url:{url}}) set n :%s " % contenttype
            
             tx_user_session.append(cq,url=url )
