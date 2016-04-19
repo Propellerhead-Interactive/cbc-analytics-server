@@ -120,6 +120,6 @@ Your API JSON string should look like:
 * browse to http://localhost:7474/browser and change the password to "hotdog99"
 
 ## RUNNING LOCALLY
-> neo4j start
-> tornado tserver.py
+* > neo4j start
+* > tornado tserver.py
 
