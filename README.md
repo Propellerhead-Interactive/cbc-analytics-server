@@ -111,6 +111,11 @@ Your API JSON string should look like:
 * $ cd /var/lib/neo4j
 * $ ./bin/neo4j-shell
 
+## GETTING REQUIREMENTS
+* download https://bootstrap.pypa.io/get-pip.py
+* sudo python get-pip.py
+* sudo pip install -r requirements.txt
+
 ## RUNNING LOCALLY
 
 > tornado -f tserver.py
