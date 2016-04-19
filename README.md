@@ -115,8 +115,11 @@ Your API JSON string should look like:
 * download https://bootstrap.pypa.io/get-pip.py
 * sudo python get-pip.py
 * sudo pip install -r requirements.txt
+* download neo4j community edition at http://www.neo4j.com/download/
+* start the neo4j database on port 7474
+* browse to http://localhost:7474/browser and change the password to "hotdog99"
 
 ## RUNNING LOCALLY
-
-> tornado -f tserver.py
+> neo4j start
+> tornado tserver.py
 
