@@ -106,7 +106,16 @@ Your API JSON string should look like:
 * $ cd /var/lib/neo4j
 * $ ./bin/neo4j-shell
 
-## RUNNING LOCALLY
+## GETTING REQUIREMENTS
+* download https://bootstrap.pypa.io/get-pip.py
+* sudo python get-pip.py
+* sudo pip install -r requirements.txt
+* download neo4j community edition at http://www.neo4j.com/download/
+* start the neo4j database on port 7474
+* browse to http://localhost:7474/browser and change the password to "hotdog99"
 
-> python -f tserver.py
+## RUNNING LOCALLY
+* > neo4j start
+* > python tserver.py
+
 
