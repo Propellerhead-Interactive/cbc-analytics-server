@@ -574,7 +574,7 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
   color: #1c84c6;
 }
 .btn-info.btn-outline {
-  color: #23c6c8;
+  color: #993300;
 }
 .btn-warning.btn-outline {
   color: #f8ac59;
@@ -590,8 +590,8 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
   color: #fff;
 }
 .btn-primary {
-  background-color: #1ab394;
-  border-color: #1ab394;
+  background-color: #993300;
+  border-color: #993300;
   color: #FFFFFF;
 }
 .btn-primary:hover,
@@ -599,8 +599,8 @@ body.canvas-menu.mini-navbar nav.navbar-static-side {
 .btn-primary:active,
 .btn-primary.active,
 .open .dropdown-toggle.btn-primary {
-  background-color: #18a689;
-  border-color: #18a689;
+  background-color: #993300;
+  border-color: #993300;
   color: #FFFFFF;
 }
 .btn-primary:active,
@@ -999,37 +999,37 @@ button.dim:active:before {
 }
 .label-primary,
 .badge-primary {
-  background-color: #1ab394;
+  background-color: #993300;
   color: #FFFFFF;
 }
 .label-success,
 .badge-success {
-  background-color: #1c84c6;
+  background-color: #993300;
   color: #FFFFFF;
 }
 .label-warning,
 .badge-warning {
-  background-color: #f8ac59;
+  background-color: #993300;
   color: #FFFFFF;
 }
 .label-warning-light,
 .badge-warning-light {
-  background-color: #f8ac59;
+  background-color: #993300;
   color: #ffffff;
 }
 .label-danger,
 .badge-danger {
-  background-color: #ed5565;
+  background-color: #993300;
   color: #FFFFFF;
 }
 .label-info,
 .badge-info {
-  background-color: #23c6c8;
+  background-color: #993300;
   color: #FFFFFF;
 }
 .label-inverse,
 .badge-inverse {
-  background-color: #262626;
+  background-color: #993300;
   color: #FFFFFF;
 }
 .label-white,
@@ -3487,7 +3487,7 @@ table.table-mail tr td {
   color: #ffffff;
 }
 .progress-bar {
-  background-color: #1ab394;
+  background-color: #993300;
 }
 .progress-small,
 .progress-small .progress-bar {

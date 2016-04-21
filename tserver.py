@@ -86,7 +86,7 @@ class DashboardHandler(tornado.web.RequestHandler):
         try:
             self.set_default_headers()
             self.set_header('Content-type', 'text/html')
-            users, content, sessions, loads, reads, categories = NeoConnector().read_stats()
+            users, content, sessions, loads, reads, categories, sessionCounts, todayCounts, totalSessionCounts,top_read = NeoConnector().read_stats()
             
             l =  int(loads[0][0])
             if l ==0:
@@ -104,15 +104,17 @@ class PrettyDashboardHandler(tornado.web.RequestHandler):
         try:
             self.set_default_headers()
             self.set_header('Content-type', 'text/html')
-            users, content, sessions, loads, reads, categories = NeoConnector().read_stats()
+            users, content, sessions, loads, reads, categories, sessionCounts, todayCounts, totalSessionCounts, top_read = NeoConnector().read_stats()
             
             l =  int(loads[0][0])
             if l ==0:
                 pct=0
             else:
                 pct=round(Decimal(float(reads[0][0])/float(loads[0][0]))*100,2)
+         
+            now = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
        
-            self.render("dashboard_n.html",reads=reads, loads=loads, visits = loads,categories= categories, users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct)
+            self.render("dashboard_n.html",now = now,reads=reads,top_read=top_read, loads=loads, totalSessionCounts=totalSessionCounts,todayCounts=todayCounts, visits = loads,categories= categories, users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct, sessionCounts = sessionCounts)
         except IOError as e:
             print e[1]
             self.write("WHU?!")     

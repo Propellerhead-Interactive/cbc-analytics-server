@@ -3,6 +3,7 @@ import config
 import datetime
 import calendar
 import time
+from datetime import timedelta
 
 
 pw = config.neo4j_pw
@@ -16,6 +17,18 @@ class NeoConnector():
     def __init__(self):
         """just set it up yo"""
         
+    def compute_days_ago(self,days_ago):
+        theday = datetime.datetime.now()
+        date_array = []
+        for n in range(0,days_ago):
+            ymd = "%s%s%s" % (theday.year , theday.month, theday.day )
+            date_array.append(ymd)
+            theday = theday - timedelta(1)
+    
+        return date_array
+        
+        
+    
     def read_stats(self):
         """reads the stats yo"""
         try:
@@ -26,6 +39,7 @@ class NeoConnector():
             reads = graph.cypher.execute("MATCH (n)-[k:READ]-(m) return count(k)")
             
             
+            
             # Thanks for the reminder.
  #            I don't have the capacity to add it myself.
  #            Appreciate it if you could give your thoughts on adding the 5 queries below in the dashboard.
@@ -33,15 +47,35 @@ class NeoConnector():
  #            The last 2 queries below I thought of but don't have the time to write the cypher.
 
             # 1) Find me all the users that have visited the CBC website x times in the last y days
-
-            q1="""MATCH (month_yy:Year_Month)<-[:PART_OF]-(day:Day),
-            	(day)<-[:INITIATED]-(session),
-            	(session)<-[:STARTED]-(user)
-            WHERE day.day >= 1 and day.day <= 5 //day.day in [1,2,3,4,5]
-            and month_yy.id = "201603"
-            WITH day.day as day, user.name as username, count(session) as SessionCount //,day.day
-            where SessionCount > x //x need to be replaced with number
-            RETURN username, SessionCount"""
+            date_array_exploded = self.compute_days_ago(5)
+            q1="""MATCH (day)<-[:INITIATED]-(session),
+            	(session)<-[k:STARTED]-(user)
+            WHERE day.date in %s
+            WITH day.date as day,  count(session) as SessionCount 
+            where SessionCount > 2 
+            RETURN day, SessionCount ORDER BY day""" % date_array_exploded
+            
+            sessionCounts = graph.cypher.execute(q1)
+            
+            
+            
+            q_session_today="""MATCH (day)<-[:INITIATED]-(session),
+            	(session)<-[k:STARTED]-(user)
+            WHERE day.date in %s
+            WITH day.date as day,  count(session) as SessionCount 
+            where SessionCount > 1 
+            RETURN day, SessionCount ORDER BY day""" % self.compute_days_ago(1)
+            
+            todayCounts = graph.cypher.execute(q_session_today)
+            
+            q_total_session_today="""MATCH (day)<-[:INITIATED]-(session),
+            	(session)<-[k:STARTED]-(user)
+            WHERE day.date in %s
+            WITH day.date as day,  count(session) as SessionCount 
+            where SessionCount > 0 
+            RETURN day, SessionCount ORDER BY day""" % self.compute_days_ago(1)
+            
+            totalSessionCounts = graph.cypher.execute(q_total_session_today)
 
             # 2) Some Statistical queries to get Story by the action on that whether READ or LOADED or SHARED counts.
 
@@ -58,7 +92,15 @@ class NeoConnector():
             categories = graph.cypher.execute(q2)
 
             # 4) What are the top 10 categories, people, companies, organizations, locations and subjects in the last x days?
+            
+            q_top_read = "Match (n:Content)-[:READ]-(s:Session) with count(n) as count, n.name as name return name, count order by count desc limit 10"
+            top_read  = graph.cypher.execute(q_top_read)
+            
+            q_people = "MATCH (n:Subject)-[]-(c:Content)-[:VISITED]-(s:Session)-[]-(d:Day) return n limit 25"
  # #
+ 
+            working = "MATCH (n:Subject)-[k]-(c:Content)-[:LOADED]-(s:Session)-[j]-(d:Day) where (d.date='2016421') return collect(n.name) ;"
+ 
             # 5) What parts of the day are the top 10 subjects/topics in #4 getting traction from?
             # a) dark morning [12-6am]
             # b) early morning [6-9am]
@@ -72,7 +114,7 @@ class NeoConnector():
             
             
             
-            a= users, content, sessions, loads, reads, categories
+            a= users, content, sessions, loads, reads, categories, sessionCounts, todayCounts, totalSessionCounts, top_read
             return a
         except IOError as e:
             if debug:
