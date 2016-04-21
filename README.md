@@ -35,11 +35,6 @@ Create/Edit the config.py file
 
 
 
-
-
-
-
-
 ## IMPLEMENTATION
 
 Add the following code to your web pages (based on the CBC tagged properties)
@@ -113,5 +108,5 @@ Your API JSON string should look like:
 
 ## RUNNING LOCALLY
 
-> tornado -f tserver.py
+> python -f tserver.py
 

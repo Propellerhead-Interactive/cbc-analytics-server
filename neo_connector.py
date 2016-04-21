@@ -22,9 +22,57 @@ class NeoConnector():
             users = graph.cypher.execute("MATCH (n:User) return count(n)")
             content = graph.cypher.execute("MATCH (n:Content) return count(n)")
             sessions = graph.cypher.execute("MATCH (n:Session) return count(n)")
-            loads = graph.cypher.execute("MATCH (n)-[k:LOAD]-(m) return count(k)")
+            loads = graph.cypher.execute("MATCH (n)-[k:LOADED]-(m) return count(k)")
             reads = graph.cypher.execute("MATCH (n)-[k:READ]-(m) return count(k)")
-            a= users, content, sessions, loads, reads
+            
+            
+            # Thanks for the reminder.
+ #            I don't have the capacity to add it myself.
+ #            Appreciate it if you could give your thoughts on adding the 5 queries below in the dashboard.
+ #            The first 3 queries below we could use from the Neo4j Bootcamp.
+ #            The last 2 queries below I thought of but don't have the time to write the cypher.
+
+            # 1) Find me all the users that have visited the CBC website x times in the last y days
+
+            q1="""MATCH (month_yy:Year_Month)<-[:PART_OF]-(day:Day),
+            	(day)<-[:INITIATED]-(session),
+            	(session)<-[:STARTED]-(user)
+            WHERE day.day >= 1 and day.day <= 5 //day.day in [1,2,3,4,5]
+            and month_yy.id = "201603"
+            WITH day.day as day, user.name as username, count(session) as SessionCount //,day.day
+            where SessionCount > x //x need to be replaced with number
+            RETURN username, SessionCount"""
+
+            # 2) Some Statistical queries to get Story by the action on that whether READ or LOADED or SHARED counts.
+
+            q2="""match (session)-[r]->(story:story)
+            return  type(r),count(*) as Counts
+            order by Counts"""
+            categories = graph.cypher.execute(q2)
+
+            # 3) Statistical query to get counts by User, Session and the type of READ or LOADED or SHARED.
+
+            q3="""match (n:User)-[:STARTED]->(session)-[r]->(story:Story)
+            return n.name,session.id, type(r),count(*) as Counts
+            order by n.name, Counts"""
+            categories = graph.cypher.execute(q2)
+
+            # 4) What are the top 10 categories, people, companies, organizations, locations and subjects in the last x days?
+ # #
+            # 5) What parts of the day are the top 10 subjects/topics in #4 getting traction from?
+            # a) dark morning [12-6am]
+            # b) early morning [6-9am]
+            # c) late morning [9am-12pm]
+            # d) afternoon [12-4pm]
+            # e) evening [4-8pm]
+            # f) late night [8-12pm]
+            #
+            
+            
+            
+            
+            
+            a= users, content, sessions, loads, reads, categories
             return a
         except IOError as e:
             if debug:

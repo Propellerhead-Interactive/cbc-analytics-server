@@ -12,8 +12,12 @@ from tornado.httpserver import HTTPServer
 import json
 import config
 import datetime
+from decimal import *
 
+
+getcontext().prec = 2
 debug=True
+static_path= os.path.join(os.path.dirname(__file__), "web")
 
 class BaseHandler(tornado.web.RequestHandler):
     def set_default_headers(self):
@@ -82,36 +86,69 @@ class DashboardHandler(tornado.web.RequestHandler):
         try:
             self.set_default_headers()
             self.set_header('Content-type', 'text/html')
-            users, content, sessions, loads, reads = NeoConnector().read_stats()
+            users, content, sessions, loads, reads, categories = NeoConnector().read_stats()
             
             l =  int(loads[0][0])
             if l ==0:
                 pct=0
             else:
                 pct=int(reads[0][0])/int(loads[0][0])
-                
-            self.render("dashboard.html", users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct)
+            
+            self.render("dashboard.html", categories= categories, users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct)
         except IOError as e:
             print e[1]
             self.write("WHU?!")     
 
+class PrettyDashboardHandler(tornado.web.RequestHandler): 
+    def get(self):
+        try:
+            self.set_default_headers()
+            self.set_header('Content-type', 'text/html')
+            users, content, sessions, loads, reads, categories = NeoConnector().read_stats()
+            
+            l =  int(loads[0][0])
+            if l ==0:
+                pct=0
+            else:
+                pct=round(Decimal(float(reads[0][0])/float(loads[0][0]))*100,2)
+       
+            self.render("dashboard_n.html",reads=reads, loads=loads, visits = loads,categories= categories, users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct)
+        except IOError as e:
+            print e[1]
+            self.write("WHU?!")     
+
+
+
 def make_app():
+
     #tornado.autoreload.start()
     for dir, _, files in os.walk('.'):
         [tornado.autoreload.watch(dir + '/' + f) for f in files]
-    return tornado.web.Application([
+        
+        
+    settings = {
+                "debug": True,
+                #"static_path": os.path.join(os.path.dirname(__file__), "static")
+            }
+    app = tornado.web.Application([
         (r"/lana.js", MainHandler),
         (r"/read.js", ReadJSHandler),
         (r"/lana/events", EventHandler),
         (r"/lana/visits", EventHandler),
         (r"/", IndexHandler),
         (r"/dboard", DashboardHandler),
-        
+        (r"/pboard", PrettyDashboardHandler),
+        (r'/static/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), "static"))),
         
     ])
+    app.settings = settings
+    return app
 
 if __name__ == "__main__":
     app = make_app()
+    for dir, _, files in os.walk('.'):
+        [tornado.autoreload.watch(dir + '/' + f) for f in files]
+    
     server = HTTPServer(app)
     server.bind(8888)
     server.start(4)
