@@ -8,10 +8,10 @@ Now with extra NEO!
 * $ cd /var/opt/anal
 * $ (sudo) git clone <repo-path> .
 
-Create/Edit the config.py file 
-* neo4j server, 
-* neo4j password (assumed username is neo4j) 
-* server port 
+Create/Edit the config.py file
+* neo4j server,
+* neo4j password (assumed username is neo4j)
+* server port
 
 * $ sudo /etc/init.d/tornado start
 
@@ -26,12 +26,13 @@ Create/Edit the config.py file
 ##NEO4J Tuning
 
 * CREATE CONSTRAINT ON (c:Content) ASSERT c.url IS UNIQUE
+* CREATE CONSTRAINT ON (c:Content) ASSERT c.title IS UNIQUE
 * CREATE CONSTRAINT ON (s:Session) ASSERT s.id IS UNIQUE
 * CREATE CONSTRAINT ON (u:User) ASSERT u.name IS UNIQUE
-* CREATE CONSTRAINT ON (d:Year_Month) ASSERT d.id IS UNIQUE 
-* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE 
-* CREATE CONSTRAINT ON (s:Subject) ASSERT s.name IS UNIQUE 
-* CREATE CONSTRAINT ON (c:Category) ASSERT c.name IS UNIQUE 
+* CREATE CONSTRAINT ON (d:Year_Month) ASSERT d.id IS UNIQUE
+* CREATE CONSTRAINT ON (d:Day) ASSERT d.date IS UNIQUE
+* CREATE CONSTRAINT ON (s:Subject) ASSERT s.name IS UNIQUE
+* CREATE CONSTRAINT ON (c:Category) ASSERT c.name IS UNIQUE
 
 
 
@@ -47,14 +48,14 @@ Add the following code to your web pages (based on the CBC tagged properties)
         var s = CBC.APP.SC = {};
         s.keywords = "Idaho, United States, General news, Lotteries, Bernie Sanders, Arizona, U.S. Democratic Party, Primary elections, Caucuses, Government and politics, Donald Trump, Voting, Ted Cruz, Hillary Clinton, Utah, Weapons of mass destruction";
         /* END TESTING */
-        
+
         var category=CBC.APP.SC.keywords.split(","); //OR HOWEVER YOU WANT TO GENERATE AN ARRAY
     </script>
     ....
     <script src="http://localhost:8888/lana.js"></script>
     <script type="text/javascript">
 			/* setup analytics for this page */
-			
+
 			var trackingData = {"category":category};
 			//lana.debug(true);
     			lana.track("load", trackingData);
@@ -63,13 +64,13 @@ Add the following code to your web pages (based on the CBC tagged properties)
 			readingJSConfig.el=".article-text";
 			readingJSConfig.cb = function(){
 		    		lana.track("read", trackingData);
-			}; 
+			};
 		window.readingJSConfig = readingJSConfig;
     </script>
     <script src="http://{your_analytics_server}:{analytics_port}/read.js"></script>
 
 ```
-Your API JSON string should look like: 
+Your API JSON string should look like:
 
 ```
 
@@ -117,5 +118,3 @@ Your API JSON string should look like:
 ## RUNNING LOCALLY
 * > neo4j start
 * > python tserver.py
-
-
