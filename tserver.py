@@ -99,7 +99,11 @@ class DashboardHandler(tornado.web.RequestHandler):
             print e[1]
             self.write("WHU?!")
 
+
+
 class PrettyDashboardHandler(tornado.web.RequestHandler):
+
+
     def get(self):
         try:
             self.set_default_headers()
@@ -132,6 +136,14 @@ class PrettyDashboardHandler(tornado.web.RequestHandler):
             print e[1]
             self.write("WHU?!")
 
+class DataHandler(tornado.web.RequestHandler):
+
+    def get(self, param1):
+        self.set_default_headers()
+        self.set_header('Content-type', 'application/json')
+        days = 5
+        self.write(json.dumps(NeoConnector().read_stats(days)[0][1]))
+
 
 
 def make_app():
@@ -152,6 +164,8 @@ def make_app():
         (r"/", IndexHandler),
         (r"/dboard", DashboardHandler),
         (r"/pboard", PrettyDashboardHandler),
+        (r"/data/(.*)", DataHandler),
+
         (r'/static/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), "static"))),
 
     ])

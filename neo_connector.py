@@ -28,7 +28,6 @@ class NeoConnector():
             ymd = "%s%s%s" % (theday.year , theday.month, theday.day )
             date_array.append(ymd)
             theday = theday - timedelta(1)
-
         return date_array
 
 
@@ -40,7 +39,6 @@ class NeoConnector():
         WITH day.date as day,  count(session) as SessionCount
         where SessionCount > 2
         RETURN day, SessionCount ORDER BY day""" % date_array_exploded
-
         return graph.cypher.execute(q1)
 
     def get_today_counts(self, time_in_days):
@@ -50,7 +48,7 @@ class NeoConnector():
         WITH day.date as day,  count(session) as SessionCount
         where SessionCount > 1
         RETURN day, SessionCount ORDER BY day""" % self.compute_days_ago(1)
-
+        #return g.run(q_session_today).evaluate()
         return graph.cypher.execute(q_session_today)
 
     def total_session_counts(self, time_in_days):
@@ -60,13 +58,10 @@ class NeoConnector():
         WITH day.date as day,  count(session) as SessionCount
         where SessionCount > 0
         RETURN day, SessionCount ORDER BY day""" % self.compute_days_ago(1)
-
         totalSessionCounts = graph.cypher.execute(q_total_session_today)
-
         return totalSessionCounts
 
     def get_categories(self):
-
         q2="""match (session)-[r]->(story:story)
         return  type(r),count(*) as Counts
         order by Counts"""
