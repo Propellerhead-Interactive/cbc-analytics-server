@@ -86,7 +86,7 @@ class NeoConnector():
         return reads
 
     def top_read(self):
-        q_top_read = "Match (n:Content)-[:READ]-(s:Session) with count(n) as count, n.name as name return name, count order by count desc limit 10"
+        q_top_read = "Match (n:Content)-[k:READ]-(s:Session) with count(n) as count, n.name as name, id(n) as id return name, count, id order by count desc limit 10"
         return graph.cypher.execute(q_top_read)
 
     def get_counts(self):

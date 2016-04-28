@@ -80,6 +80,25 @@ class IndexHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("Hi!");
 
+class APIHandler(BaseHandler):
+    def get(self, arg):
+        self.set_default_headers()
+        self.set_header('Content-type', 'application/json')
+        
+        if arg == "total_users":
+            self.write({'type': 'total_users', 'value': NeoConnector().total_users()[0][0]})
+        elif arg == "total_visits":
+            self.write({'type': 'total_visits', 'value': NeoConnector().total_loads()[0][0]})
+        elif arg == "total_reads":
+            self.write({'type': 'total_reads', 'value': NeoConnector().total_reads()[0][0]})
+        elif arg == "top_read":
+            top_read = NeoConnector().top_read()
+            arr = []
+            for a in top_read:
+                arr.append({"article_name": a[0], "read_count": a[1], "id": a[2], "blah": a[3]})
+            
+            output = {'type': 'top_read', 'value': arr}
+            self.write(json.dumps(output))
 
 class DashboardHandler(tornado.web.RequestHandler):
     def get(self):
@@ -165,8 +184,10 @@ def make_app():
         (r"/dboard", DashboardHandler),
         (r"/pboard", PrettyDashboardHandler),
         (r"/data/(.*)", DataHandler),
-
         (r'/static/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), "static"))),
+
+        #RESTful APIs
+        (r"/api/(.*)", APIHandler),
 
     ])
     app.settings = settings
