@@ -1,31 +1,70 @@
 class InfoBox extends React.Component {
 	constructor() {
 		super();
+
+		this.state = {
+			articles: []
+		};
 	}
+
+	_handleUserChange(data){
+		this.setState({articles: data})
+	}
+
 	render(){
 		let component = <InfoBoxContent small={this.props.title} />;
+		let span = "To Date";
+		let label_class = "label label-success pull-right";
 		
 		if(this.props.component == "Reads"){
 			component = <InfoBoxContentReads small={this.props.title} />;
 		} else if (this.props.component == "MultiSession"){
 			component = <InfoBoxContentMultiSession small={this.props.title} />;
 		} else if (this.props.component == "TopArticles") {
-			component = <InfoBoxContentTopArticles small={this.props.title} />;
+			component = <InfoBoxContentTopArticles small={this.props.title} articles={this.state.articles}/>;
 		} else if (this.props.component == "Users"){
 			component = <InfoBoxContentUsers small={this.props.title} />;
 		} else if (this.props.component == "Visits"){
 			component = <InfoBoxContentVisits small={this.props.title} />;
 		}
+
+		if(this.props.span == 'select'){
+			span = <DateSelector onUserChange={this._handleUserChange.bind(this)}/>;
+			label_class = "pull-right";
+		}
 		
 		return (
 			<div className="ibox float-e-margins">
         <div className="ibox-title">
-          <span className="label label-success pull-right">To Date</span>
+          <span className={label_class}>{span}</span>
           <h5>{this.props.title}</h5>
         </div>
         {component}
       </div>
 		)
+	}
+}
+
+class DateSelector extends React.Component {
+	constructor(){
+		super();
+	}
+	render(){
+		return (
+			<select className="date-selector" onChange={this._onChange.bind(this)}>
+				<option value="">All</option>
+				<option value={moment().subtract(1, 'days').format('x')}>In the last 24 hours</option>
+				<option value={moment().subtract(2, 'days').format('x')}>In the last 48 hours</option>
+				<option value={moment().subtract(7, 'days').format('x')}>In the last week</option>
+				<option value={moment().subtract(1, 'month').format('x')}>In the last month</option>
+			</select>
+		)
+	}
+	_onChange(event){
+		$.get("http://localhost:8888/api/top_read?date="+event.target.value, {}, (data) => {
+			//this.setState({data});
+			this.props.onUserChange(data);
+		});
 	}
 }
 
@@ -42,8 +81,8 @@ class InfoBoxContent extends React.Component {
 		return (
       <div className="ibox-content">
         <h1 className="no-margins">{data}</h1>
-        <div className="stat-percent font-bold text-success">0% <i className="fa fa-bolt"></i></div>
-        <small>Total {this.props.small}</small>
+        {/*<div className="stat-percent font-bold text-success">0% <i className="fa fa-bolt"></i></div>
+        <small>Total {this.props.small}</small> */}
       </div>
 		)
 	}
@@ -51,7 +90,7 @@ class InfoBoxContent extends React.Component {
 		this._fetchData();
 	}
 	componentDidMount(){
-		this._timer = setInterval(() => this._fetchData(), 5000);
+		this._timer = setInterval(() => this._fetchData(), 10000);
 	}
 	componentWillUnmount(){
 		clearInterval(this._timer);
@@ -86,7 +125,7 @@ class InfoBoxContentReads extends InfoBoxContent {
 		return (
       <div className="ibox-content">
         <h1 className="no-margins">{data}</h1>
-        <div className="font-bold text-navy">Reads: 0%  <i className="fa fa-bolt"></i> </div>
+        {/*<div className="font-bold text-navy">Reads: 0%  <i className="fa fa-bolt"></i> </div> */}
 	    </div>
 		)
 	}
@@ -99,7 +138,7 @@ class InfoBoxContentReads extends InfoBoxContent {
 
 class InfoBoxContentTopArticles extends InfoBoxContent {
 	render() {
-		const data = this._getData() || [];
+		const data = this.props.articles.value ? this.props.articles.value : this._getData() || [];
 
 		return (
 			<div className="ibox-content">
@@ -109,6 +148,7 @@ class InfoBoxContentTopArticles extends InfoBoxContent {
               <thead>
                 <tr>
                   <th>Article </th>
+                  <th>Pubished On </th>
                   <th>Read Count </th>
                 </tr>
               </thead>
@@ -135,7 +175,8 @@ class Article extends React.Component {
 	render(){
 		return (
 			<tr>
-        <td>{this.props.data.article_name}</td>
+        <td><a href={this.props.data.url} target="_blank">{this.props.data.article_name}</a></td>
+        <td>{moment.unix(this.props.data.publication_date/1000).format('YYYY/MM/DD')}</td>
         <td>{this.props.data.read_count}</td>
       </tr>
     )
@@ -224,27 +265,30 @@ class App extends React.Component	{
 			    </div>
 			    <div className="wrapper wrapper-content">
 			        <div className="row">
-			        		<div className="col-md-3">
+			        		<div className="col-md-4">
 	                	<InfoBox title="Users" component="Users" />
 			            </div>
-			            <div className="col-md-3">
+			            <div className="col-md-4">
 			            	<InfoBox title="Visits" component="Visits" />
 			            </div>
-			            <div className="col-md-3">
+			            <div className="col-md-4">
 			            	<InfoBox title="Reads" component="Reads" />
 			            </div>
-			            <div className="col-md-3">
-		                <InfoBox title="30 Day Trend (FPO)" />
-			            </div>
+			            {/*<div className="col-md-3">
+		               //  <InfoBox title="30 Day Trend (FPO)" />
+			             //</div>
+			           	 */}
 			        </div>
+			        {/*
 			        <div className="row">
 			            <div className="col-lg-12">
 			            	<InfoBox title="Muti-session views for the last n days" component="MultiSession"/>
 			            </div>
 			        </div>
+			      	*/}
 			        <div className="row">
 			            <div className="col-lg-12">
-			            		<InfoBox title="Top Articles" component="TopArticles"/>
+			            		<InfoBox title="Top Articles" component="TopArticles" span="select"/>
 			            </div>
 			        </div>
 			        <div className="footer">

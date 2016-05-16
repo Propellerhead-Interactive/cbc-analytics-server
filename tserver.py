@@ -84,7 +84,8 @@ class APIHandler(BaseHandler):
     def get(self, arg):
         self.set_default_headers()
         self.set_header('Content-type', 'application/json')
-        
+        date = self.get_argument('date', None, True)
+
         if arg == "total_users":
             self.write({'type': 'total_users', 'value': NeoConnector().total_users()[0][0]})
         elif arg == "total_visits":
@@ -92,10 +93,13 @@ class APIHandler(BaseHandler):
         elif arg == "total_reads":
             self.write({'type': 'total_reads', 'value': NeoConnector().total_reads()[0][0]})
         elif arg == "top_read":
-            top_read = NeoConnector().top_read()
+            if date:
+                top_read = NeoConnector().top_read(date)
+            else:
+                top_read = NeoConnector().top_read()
             arr = []
             for a in top_read:
-                arr.append({"article_name": a[0], "read_count": a[1], "id": a[2], "blah": a[3]})
+                arr.append({"article_name": a[0], "read_count": a[1], "id": a[2], "url": a[3], "publication_date": a[4]})
             
             output = {'type': 'top_read', 'value': arr}
             self.write(json.dumps(output))

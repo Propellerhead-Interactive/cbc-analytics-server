@@ -85,8 +85,11 @@ class NeoConnector():
         reads = graph.cypher.execute("MATCH (n)-[k:READ]-(m) return count(k)")
         return reads
 
-    def top_read(self):
-        q_top_read = "Match (n:Content)-[k:READ]-(s:Session) with count(n) as count, n.name as name, id(n) as id return name, count, id order by count desc limit 10"
+    def top_read(self, date=""):
+        if date:
+            q_top_read = "Match (n:Content)-[:READ]-(s:Session) with count(n) as count, n.name as name, n.url as url, n.publicationDate as pubdate, id(n) as id where toFloat(pubdate) > %s return name, count, id, url, pubdate order by count desc limit 20" % (date)
+        else:
+            q_top_read = "Match (n:Content)-[:READ]-(s:Session) with count(n) as count, n.name as name, n.url as url, n.publicationDate as pubdate, id(n) as id return name, count, id, url, pubdate order by count desc limit 20"
         return graph.cypher.execute(q_top_read)
 
     def get_counts(self):
