@@ -72,7 +72,8 @@ class NeoConnector():
         return graph.cypher.execute("MATCH (n:User) return count(n)")
 
     def total_content(self):
-        return graph.cypher.execute("MATCH (n:Content) return count(n)")
+        content = graph.cypher.execute("MATCH (n:Content) return count(n)")
+        return content
 
     def total_sessions(self):
         return graph.cypher.execute("MATCH (n:Session) return count(n)")

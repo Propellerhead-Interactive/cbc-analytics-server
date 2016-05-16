@@ -103,6 +103,10 @@ class APIHandler(BaseHandler):
             
             output = {'type': 'top_read', 'value': arr}
             self.write(json.dumps(output))
+        elif arg == "total_content":
+            self.write({'type': 'total_content', 'value': NeoConnector().total_content()[0][0]})
+        elif arg == "total_sessions":
+            self.write({'type': 'total_sessions', 'value': NeoConnector().total_sessions()[0][0]})
 
 class DashboardHandler(tornado.web.RequestHandler):
     def get(self):
@@ -131,33 +135,10 @@ class PrettyDashboardHandler(tornado.web.RequestHandler):
         try:
             self.set_default_headers()
             self.set_header('Content-type', 'text/html')
-
-            try:
-                url = self.request.uri
-                query = urlparse(urllib.unquote(url),allow_fragments=False).query
-                days = int(query.split("t=")[1])
-                print days
-                if days==0:
-                    days=5
-            except (IndexError, IOError) as e:
-                print e
-                days = 5
-                pass
-
-            users, content, sessions, loads, reads, categories, sessionCounts, todayCounts, totalSessionCounts, top_read = NeoConnector().read_stats(days)
-
-            l =  int(loads[0][0])
-            if l ==0:
-                pct=0
-            else:
-                pct=round(Decimal(float(reads[0][0])/float(loads[0][0]))*100,2)
-
-            now = datetime.datetime.now().strftime("%I:%M%p on %B %d, %Y")
-
-            self.render("dashboard_n.html",now = now,reads=reads,top_read=top_read, loads=loads, totalSessionCounts=totalSessionCounts,todayCounts=todayCounts, visits = loads,categories= categories, users=users[0][0], content=content[0][0], sessions=sessions[0][0], readpct=pct, sessionCounts = sessionCounts)
+            self.render("dashboard_n.html")
         except IOError as e:
             print e[1]
-            self.write("WHU?!")
+            self.write("ERR!")
 
 class DataHandler(tornado.web.RequestHandler):
 
@@ -189,7 +170,7 @@ def make_app():
         (r"/pboard", PrettyDashboardHandler),
         (r"/data/(.*)", DataHandler),
         (r'/static/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), "static"))),
-
+        (r'/react/(.*)', tornado.web.StaticFileHandler, dict(path=os.path.join(os.path.dirname(__file__), "react"))),
         #RESTful APIs
         (r"/api/(.*)", APIHandler),
 

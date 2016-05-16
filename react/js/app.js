@@ -26,6 +26,10 @@ class InfoBox extends React.Component {
 			component = <InfoBoxContentUsers small={this.props.title} />;
 		} else if (this.props.component == "Visits"){
 			component = <InfoBoxContentVisits small={this.props.title} />;
+		} else if (this.props.component == "Content"){
+			component = <InfoBoxContentContent small={this.props.title} />;
+		} else if (this.props.component == "Sessions"){
+			component = <InfoBoxContentSessions small={this.props.title} />;
 		}
 
 		if(this.props.span == 'select'){
@@ -100,6 +104,22 @@ class InfoBoxContent extends React.Component {
 	}
 	_getData(){
 		return this.state.data.value;
+	}
+}
+
+class InfoBoxContentSessions extends InfoBoxContent {
+	_fetchData() {
+		$.get("http://localhost:8888/api/total_sessions", {}, (data) => {
+			this.setState({data});
+		});
+	}
+}
+
+class InfoBoxContentContent extends InfoBoxContent {
+	_fetchData() {
+		$.get("http://localhost:8888/api/total_content", {}, (data) => {
+			this.setState({data});
+		});
 	}
 }
 
@@ -235,6 +255,10 @@ class InfoBoxContentMultiSession extends React.Component {
 class App extends React.Component	{
 	constructor() {
 		super();
+
+		this.state = {
+			read_pct: 5
+		}
 	}
 	render() {
 		return (
@@ -272,12 +296,21 @@ class App extends React.Component	{
 			            	<InfoBox title="Visits" component="Visits" />
 			            </div>
 			            <div className="col-md-4">
-			            	<InfoBox title="Reads" component="Reads" />
+			            	<InfoBox title="Sessions" component="Sessions" />
 			            </div>
 			            {/*<div className="col-md-3">
 		               //  <InfoBox title="30 Day Trend (FPO)" />
 			             //</div>
 			           	 */}
+			        </div>
+			        <h4>Content Relationship Counts</h4>
+			        <div className="row">
+			        	<div className="col-md-4">
+                	<InfoBox title="Content" component="Content" />
+		            </div>
+		            <div className="col-md-4">
+                	<InfoBox title="Reads" component="Reads" />
+		            </div>
 			        </div>
 			        {/*
 			        <div className="row">
@@ -286,6 +319,7 @@ class App extends React.Component	{
 			            </div>
 			        </div>
 			      	*/}
+			      	<hr />
 			        <div className="row">
 			            <div className="col-lg-12">
 			            		<InfoBox title="Top Articles" component="TopArticles" span="select"/>
