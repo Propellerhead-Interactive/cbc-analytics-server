@@ -65,7 +65,7 @@ class DateSelector extends React.Component {
 		)
 	}
 	_onChange(event){
-		$.get("http://localhost:8888/api/top_read?date="+event.target.value, {}, (data) => {
+		$.get("/api/top_read?date="+event.target.value, {}, (data) => {
 			//this.setState({data});
 			this.props.onUserChange(data);
 		});
@@ -94,7 +94,7 @@ class InfoBoxContent extends React.Component {
 		this._fetchData();
 	}
 	componentDidMount(){
-		this._timer = setInterval(() => this._fetchData(), 10000);
+		this._timer = setInterval(() => this._fetchData(), 5000);
 	}
 	componentWillUnmount(){
 		clearInterval(this._timer);
@@ -109,7 +109,7 @@ class InfoBoxContent extends React.Component {
 
 class InfoBoxContentSessions extends InfoBoxContent {
 	_fetchData() {
-		$.get("http://localhost:8888/api/total_sessions", {}, (data) => {
+		$.get("/api/total_sessions", {}, (data) => {
 			this.setState({data});
 		});
 	}
@@ -117,7 +117,7 @@ class InfoBoxContentSessions extends InfoBoxContent {
 
 class InfoBoxContentContent extends InfoBoxContent {
 	_fetchData() {
-		$.get("http://localhost:8888/api/total_content", {}, (data) => {
+		$.get("/api/total_content", {}, (data) => {
 			this.setState({data});
 		});
 	}
@@ -125,7 +125,7 @@ class InfoBoxContentContent extends InfoBoxContent {
 
 class InfoBoxContentUsers extends InfoBoxContent {
 	_fetchData() {
-		$.get("http://localhost:8888/api/total_users", {}, (data) => {
+		$.get("/api/total_users", {}, (data) => {
 			this.setState({data});
 		});
 	}
@@ -133,7 +133,7 @@ class InfoBoxContentUsers extends InfoBoxContent {
 
 class InfoBoxContentVisits extends InfoBoxContent {
 	_fetchData() {
-		$.get("http://localhost:8888/api/total_visits", {}, (data) => {
+		$.get("/api/total_visits", {}, (data) => {
 			this.setState({data});
 		});
 	}
@@ -150,7 +150,7 @@ class InfoBoxContentReads extends InfoBoxContent {
 		)
 	}
 	_fetchData() {
-		$.get("http://localhost:8888/api/total_reads", {}, (data) => {
+		$.get("/api/total_reads", {}, (data) => {
 			this.setState({data});
 		});
 	}
@@ -185,7 +185,7 @@ class InfoBoxContentTopArticles extends InfoBoxContent {
 	}
 
 	_fetchData() {
-		$.get("http://localhost:8888/api/top_read", {}, (data) => {
+		$.get("/api/top_read", {}, (data) => {
 			this.setState({data});
 		});
 	}
